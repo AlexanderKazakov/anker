@@ -1,0 +1,102 @@
+# Anker: raw text to Anki vocabulary deck with speech
+
+A Python command-line application that 
+- takes arbitrary text (a book fragment, a foreign language lesson chat export, ...) 
+- translates it into an [Anki](https://apps.ankiweb.net/) deck file with all the words and phrases 
+- or with any other vocabulary, depending on the instructions you give to the LLM
+- **text-to-speech audio** is generated for all the vocabulary entities
+- you can manually adjust the vocabulary table before the text-to-speech step if needed
+
+
+### How It Works
+
+- **Text to Vocabulary:** The provided text is converted to a `.tsv` (tab-separated values) vocabulary table using an LLM (according to the rules stated in the prompt)
+- **Speech is generated** for all vocabulary entries via a TTS service
+- **Vocabulary to Anki:** All of it is packaged into a new Anki deck file (`.apkg`)
+- **Manually import the resulting deck into Anki** and move all notes from it into a permanent deck (decks created by the application are intended to be temporary and to be used just for importing into Anki)
+
+
+## Installation
+```bash
+git clone https://github.com/AlexanderKazakov/anker.git
+cd anker
+uv venv --python 3.12
+uv pip install -e .[dev]
+uv run anker --help
+```
+
+
+## Usage
+```bash
+uv run anker --config config.yaml [--options]
+```
+See config examples in the `settings` directory.
+
+All options from the config can be overridden by command-line options, environment variables, or dotenv (priority (high > low): CLI > env > dotenv > YAML), but it's better to copy one of the existing config files and set your options there for reuse next time.
+
+You need LLM and TTS provider access keys. Currently, only OpenAI as LLM and AWS as TTS are supported, but that can be easily extended. Getting OpenAI API key is really straightforward, getting AWS access keys is a bit more complicated, but manageable.
+
+Provider access keys are set the same way as all the other settings, but since they are secret, you may prefer using dotenv or environment variables, see `.env.example`. To use dotenv, you need to copy it to `.env`, set your keys, and run the application **from the same directory** where `.env` is located.
+
+It's also better to copy an existing LLM prompt and precisely adjust it to your needs, at least for different languages.
+
+These additional steps (own config, own prompt) will take some time initially, but they will save you much more time in the long run.
+
+By default, the application will ask you to confirm each step before it is executed (`confirm_steps` is `true`). This allows you to manually adjust the intermediate vocabulary table before generating the speech and the Anki deck (e.g., in OpenOffice, saving it back in the same TSV format).
+
+If you want to do everything in one run, you can disable confirmation with `--no-confirm-steps`. However, note that it's usually better to skim the intermediate vocabulary table and adjust it manually. It's a negligible amount of time compared to the time you are going to spend learning it in Anki later, so making the vocabulary precise in the beginning is worth it.
+
+### If some output files already exist
+If the TSV vocabulary file `table_output` or the Anki deck file `anki_output` already exists, the application can either rewrite them or reuse them. If `confirm_steps` is `true`, it will ask for instructions, otherwise it will make the default choice. By default, `table_output` will be reused, while `anki_output` will be rewritten by default.
+
+
+## Anki Note & Card Structure
+
+### The Note
+The resulting Anki note consists of these fields:
+- `Front`
+- `Back`
+- `Front language`
+- `Back language`
+- `Front sound`
+- `Back sound`
+
+### Note Types
+See [this page](https://docs.ankiweb.net/getting-started.html#notes--fields) for the 'Note' vs 'Card' explanation
+
+The application can generate two different types of notes:
+- A note with two cards: the 'Forward Card' and the 'Backward Card' — `forward_and_backward` in config — **default** — to remember 'Back' given 'Front' and vice versa
+- A note with a single 'Forward Card' — `forward_only` in config — just to remember 'Back' given 'Front'
+
+The HTML/CSS templates used to render the cards are stored in [separate files within the package](src/anker/anki/templates). They are loaded from there on every application run.
+
+
+### (!) Consistency between the LLM prompt and the note type
+If you use the `forward_and_backward` note type, prompt the LLM to create a table with translations in one direction, like this:
+```tsv
+jemanden abholen	to pick someone up	German	English
+der Bahnsteig	train platform	German	English
+```
+For such a prompt, see the `settings/prompts/german2english.md` example.
+
+If you use the `forward_only` note type, prompt the LLM to create a table with translations in both directions, like this:
+```tsv
+jemanden abholen	to pick someone up	German	English
+to pick someone up	jemanden abholen	English	German
+der Bahnsteig	train platform	German	English
+train platform	der Bahnsteig	English	German
+```
+For such a prompt, see the `settings/prompts/english_russian.md` example.
+
+The 3rd and 4th columns (language labels) are important for text-to-speech in both cases.
+
+
+## TODO
+- [ ] images support
+- [ ] run text-to-speech in batches
+- [ ] work with LLM via structured json output, not tsv; but prompt writing needs to be re-thought then
+- [ ] tests / actions
+- [ ] re-think AWS login (SSL instead of keys)
+- [ ] make an Anki extension based on this code
+- [ ] or try [anki-connect](https://git.sr.ht/~foosoft/anki-connect) for a direct automatic loading to Anki
+

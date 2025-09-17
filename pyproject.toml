@@ -1,0 +1,55 @@
+[project]
+name = "anker"
+version = "0.1.0"
+description = "Arbitrary text to Anki deck with text-to-speech audio"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "openai",
+    "boto3",
+    "genanki",
+    "pydantic",
+    "pydantic-settings",
+    "tenacity",
+    "pyyaml",
+    "rich",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "mypy",
+]
+
+[project.scripts]
+anker = "anker.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 88
+
+[tool.mypy]
+strict = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/anker"]
+include = [
+  "src/anker/anki/templates/*.html",
+  "src/anker/anki/templates/*.css",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/anker/anki/templates/*.html",
+  "src/anker/anki/templates/*.css",
+]

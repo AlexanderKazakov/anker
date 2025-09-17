@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "anker",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "anker.cli",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": ["--config", "${workspaceFolder}/settings/dev_test.yaml"],
+            "python": "${workspaceFolder}/.venv/bin/python"
+        }
+    ]
+}

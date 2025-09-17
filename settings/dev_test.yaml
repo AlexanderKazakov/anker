@@ -1,0 +1,52 @@
+# Path to the input text file. If empty, the input will be read from stdin (unless the existing TSV is being re-used)
+text_input: ./tmp/1.txt
+# Path to the output/input tsv table file. If empty, it will not be created (or read from)
+table_output: ./tmp/1.tsv
+# Path to the output Anki file. If empty, it will not be created (and TTS step will be skipped)
+anki_output: ./tmp/1.apkg
+
+# Whether to confirm steps before they are executed
+confirm_steps: true
+
+# Verbosity
+log_level: DEBUG
+
+# The type of notes to create. Should be consistent with the LLM prompt.
+# One of: "forward_and_backward" or "forward_only"
+note_type: forward_and_backward
+
+# LLM settings and prompt.
+# The LLM prompt should be consistent with the note_type and with the languages
+llm:
+  provider: openai
+  options:
+    model: gpt-5
+    prompt: ./settings/prompts/german2english.md
+  providers:
+    openai:
+      api_key:
+
+# Text-to-Speech: AWS Polly voices:
+# https://docs.aws.amazon.com/polly/latest/dg/available-voices.html
+tts:
+  languages:
+    english:
+      provider: aws
+      options:
+        voice_id: Gregory
+        engine: neural
+    german:
+      provider: aws
+      options:
+        voice_id: Daniel
+        engine: neural
+    russian:
+      provider: aws
+      options:
+        voice_id: Tatyana
+        engine: standard
+  providers:
+    aws:
+      access_key_id:
+      secret_access_key:
+      region: eu-central-1
