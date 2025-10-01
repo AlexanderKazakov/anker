@@ -4,6 +4,7 @@ import sys
 import shutil
 from rich.console import Console
 from rich.prompt import Confirm
+from tempfile import TemporaryDirectory
 
 from .anki.anki_deck_creator import AnkiDeckCreator
 from .vocab_entry import VocabEntry
@@ -35,9 +36,9 @@ class Pipeline:
             self.logger.info("No anki_output specified; skipping TTS and Anki packaging")
             return
         
-        self.tts.synthesize(vocab)
-
-        self._build_anki(vocab)
+        with TemporaryDirectory(prefix="anker_media_") as audio_dir:
+            self.tts.synthesize(vocab, Path(audio_dir))
+            self._build_anki_deck(vocab)
 
         self._ask_and_save_result_to_few_shot_examples()
     
@@ -100,7 +101,7 @@ class Pipeline:
         self.console.print("[bold]Reading input text from stdin[/bold] [dim](end with Ctrl-D)[/dim]")
         return sys.stdin.read()
 
-    def _build_anki(self, vocab: list[VocabEntry]) -> None:
+    def _build_anki_deck(self, vocab: list[VocabEntry]) -> None:
         output_file = Path(self.settings.anki_output)
         if output_file.is_file():
             if self._confirm_step(

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Literal
+import uuid
 
 from ..vocab_entry import VocabEntry
 from ..settings import (
@@ -37,7 +37,7 @@ class TTSManager:
         }
         self.logger.debug("Initialized TTSManager")
 
-    def synthesize(self, entries: list[VocabEntry]) -> None:
+    def synthesize(self, entries: list[VocabEntry], audio_dir: Path) -> None:
         self.logger.info("Starting TTS synthesis for %d vocabulary entries", len(entries))
         # within each language, de-duplicate by text
         by_language = {lang: {} for lang in self.tts_clients}
@@ -49,10 +49,16 @@ class TTSManager:
             self.logger.debug("Language '%s' has %d unique texts to synthesize", lang, len(lang_entries))
             if len(lang_entries) != 0:
                 self.tts_clients[lang].synthesize(lang_entries)
+                # write audio to disk, keep paths instead of bytes
+                for text in lang_entries.keys():
+                    audio_file_path = audio_dir / f"anker-{uuid.uuid4()}.mp3"
+                    audio_file_path.write_bytes(lang_entries[text])
+                    lang_entries[text] = audio_file_path
         
         for entry in entries:
             entry.front_audio = by_language[self._check_language_defined(entry.front_language)][entry.front]
             entry.back_audio = by_language[self._check_language_defined(entry.back_language)][entry.back]
+        
         self.logger.info("Completed TTS synthesis")
 
     def _check_language_defined(self, language: str) -> str:

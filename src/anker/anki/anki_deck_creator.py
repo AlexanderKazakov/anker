@@ -1,10 +1,8 @@
 from typing import Literal
-import uuid
 import hashlib
 import secrets
 import genanki
 from pathlib import Path
-from tempfile import TemporaryDirectory
 from importlib import resources
 
 from ..settings import Settings
@@ -32,37 +30,22 @@ class AnkiDeckCreator:
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         deck = genanki.Deck(AnkiGuidGenerator.random_int_guid(), "anker_deck")
-        media_files: list[str] = []
-        with TemporaryDirectory(prefix="anker_anki_media_") as audio_dir:
-            audio_dir = Path(audio_dir)
-            for entry in vocab:
-                note = self._create_anki_note(entry, audio_dir, media_files)
-                deck.add_note(note)
+        media_files = set()
+        for entry in vocab:
+            note = self._create_anki_note(entry)
+            deck.add_note(note)
+            media_files.add(str(entry.front_audio))
+            media_files.add(str(entry.back_audio))
 
-            package = genanki.Package(deck)
-            package.media_files = media_files
+        package = genanki.Package(deck)
+        package.media_files = list(media_files)
 
-            self.logger.debug(
-                "Deck created. Writing it to %s", str(output_path.resolve())
-            )
-            package.write_to_file(str(output_path))
+        self.logger.debug(
+            "Deck created. Writing it to %s", str(output_path.resolve())
+        )
+        package.write_to_file(str(output_path))
     
-    def _create_anki_note(self, entry: VocabEntry, audio_dir: Path, media_files: list[str]) -> genanki.Note:
-        front_audio_ref = ""
-        back_audio_ref = ""
-
-        if entry.front_audio:
-            fname = self._make_audio_filename(audio_dir)
-            fname.write_bytes(entry.front_audio)
-            media_files.append(str(fname))
-            front_audio_ref = f"[sound:{fname.name}]"
-
-        if entry.back_audio:
-            fname = self._make_audio_filename(audio_dir)
-            fname.write_bytes(entry.back_audio)
-            media_files.append(str(fname))
-            back_audio_ref = f"[sound:{fname.name}]"
-
+    def _create_anki_note(self, entry: VocabEntry) -> genanki.Note:
         note = genanki.Note(
             model=self.anki_note_model,
             fields=[
@@ -70,8 +53,8 @@ class AnkiDeckCreator:
                 entry.back,
                 entry.front_language,
                 entry.back_language,
-                front_audio_ref,
-                back_audio_ref,
+                f"[sound:{entry.front_audio.name}]",
+                f"[sound:{entry.back_audio.name}]",
             ],
             guid=AnkiGuidGenerator.random_base91_guid(),
         )
@@ -141,9 +124,6 @@ class AnkiDeckCreator:
         )
         self.logger.debug("Created Anki note model '%s' with id '%d'", model_name, model.model_id)
         return model
-
-    def _make_audio_filename(self, audio_dir: Path) -> Path:
-        return audio_dir / f"anker-{uuid.uuid4()}.mp3"
     
     def _fix_genanki_sort_type(self) -> None:
         # Ensure the cards default sort key is Date Added, not first or any other field.
