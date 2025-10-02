@@ -15,54 +15,115 @@ class StrictModel(BaseModel):
 
 
 class LLMOptions(StrictModel):
-    model: str = Field(default="gpt-5")
-    # Path to the prompt or prompt template (".j2")
-    prompt_template: Path = Field(default=Path("./settings/prompts/prompt_template.md.j2"))
-    # Optional file with additional custom instructions to be inlined into the prompt
-    custom_instructions: Path | None = Field(default=None)
-    # Optional directory with few-shot examples to be inlined into the prompt. 
-    # Each example consists of a pair of files with the same stem: 
-    # "N.txt" (input) and "N.tsv" (output).
-    few_shot_examples: Path | None = Field(default=None)
+    """Provider-agnostic options that control prompt construction and model choice."""
+
+    model: str = Field(
+        default="gpt-5",
+        description="LLM model identifier to use (e.g., gpt-4o, gpt-5).",
+    )
+    prompt_template: Path = Field(
+        default=Path("./settings/prompts/prompt_template.md.j2"),
+        description="Path to the prompt or Jinja2 template file used to build the final prompt.",
+    )
+    custom_instructions: Path | None = Field(
+        default=None,
+        description="Optional file with additional instructions to inline into the prompt.",
+    )
+    few_shot_examples: Path | None = Field(
+        default=None,
+        description=(
+            "Optional directory with few-shot examples to inline into the prompt. "
+            "Each example is a pair of files sharing the same stem: N.txt (input) and N.tsv (expected output)."
+        ),
+    )
 
 
 class OpenAIProviderAccess(StrictModel):
-    api_key: SecretStr | None = Field(default=None)
+    """OpenAI provider credentials (prefer setting via environment variables)."""
+
+    api_key: SecretStr | None = Field(
+        default=None,
+        description="OpenAI API key. Can be provided via env",
+    )
 
 
 class LLMProviderAccessSettings(StrictModel):
+    """Credentials per LLM provider (merged with higher-priority env/CLI sources)."""
+
     openai: OpenAIProviderAccess | None = None
 
 
 class LLMConfig(StrictModel):
-    provider: Literal["openai"] = Field(default="openai")
-    options: LLMOptions = Field(default_factory=LLMOptions)
-    providers: LLMProviderAccessSettings | None = None
+    """LLM configuration: provider selection, runtime options, and credentials."""
+
+    provider: Literal["openai"] = Field(
+        default="openai",
+        description="Which LLM provider backend to use.",
+    )
+    options: LLMOptions = Field(
+        default_factory=LLMOptions,
+        description="Provider-agnostic LLM options such as model and prompt sources.",
+    )
+    providers: LLMProviderAccessSettings | None = Field(
+        default=None,
+        description="Provider-specific credentials. Lower priority than CLI/env/dotenv.",
+    )
 
 
 class TTSVoiceOptions(StrictModel):
-    voice_id: str
-    engine: Literal["standard", "neural"] = Field(default="neural")
+    """Voice configuration used by the TTS provider."""
+
+    voice_id: str = Field(description="Provider voice identifier to synthesize with (e.g., Polly voice ID).")
+    engine: Literal["standard", "neural"] = Field(
+        default="neural",
+        description="Synthesis engine type if supported by the provider.",
+    )
 
 
 class LanguageTTSConfig(StrictModel):
-    provider: Literal["aws"] = Field(default="aws")
-    options: TTSVoiceOptions
+    """Per-language TTS setup: provider and voice options."""
+
+    provider: Literal["aws"] = Field(
+        default="aws",
+        description="TTS provider backend.",
+    )
+    options: TTSVoiceOptions = Field(description="Voice options for this language.")
 
 
 class AWSProviderAccess(StrictModel):
-    access_key_id: SecretStr | None = Field(default=None)
-    secret_access_key: SecretStr | None = Field(default=None)
-    region: str | None = Field(default=None)
+    """AWS credentials for TTS (Amazon Polly)."""
+
+    access_key_id: SecretStr | None = Field(
+        default=None,
+        description="AWS Access Key ID. Can be provided via env",
+    )
+    secret_access_key: SecretStr | None = Field(
+        default=None,
+        description="AWS Secret Access Key. Can be provided via env",
+    )
+    region: str | None = Field(
+        default=None,
+        description="AWS region (e.g., us-east-1) for the TTS service.",
+    )
 
 
 class TTSAggregatedProviderAccessSettings(StrictModel):
+    """Credentials per TTS provider (merged with higher-priority env/CLI sources)."""
+
     aws: AWSProviderAccess | None = None
 
 
 class Text2SpeechSettings(StrictModel):
-    languages: dict[str, LanguageTTSConfig] = Field(default_factory=dict)
-    providers: TTSAggregatedProviderAccessSettings | None = None
+    """Text-to-Speech configuration across languages and providers."""
+
+    languages: dict[str, LanguageTTSConfig] = Field(
+        default_factory=dict,
+        description="Mapping of language code to its TTS configuration.",
+    )
+    providers: TTSAggregatedProviderAccessSettings | None = Field(
+        default=None,
+        description="TTS provider credentials; can be overridden by env/CLI.",
+    )
 
 
 class Settings(BaseSettings):
@@ -81,35 +142,54 @@ class Settings(BaseSettings):
         cli_enforce_required=False,
     )
 
-    # Paths
-    text_input: Path | None = None
-    table_output: Path | None = Path("./anker_vocab.tsv")
-    anki_output: Path | None = Path("./anker_deck.apkg")
+    text_input: Path | None = Field(
+        default=None,
+        description="Path to input text file. If omitted, the text will be read from stdin.",
+    )
+    table_output: Path | None = Field(
+        default=Path("./anker_vocab.tsv"),
+        description="Where to write the TSV vocabulary table. Set to null to skip writing.",
+    )
+    anki_output: Path | None = Field(
+        default=Path("./anker_deck.apkg"),
+        description="Where to write the generated Anki deck (.apkg). Set to null to skip packaging.",
+    )
 
-    # Optional path to a YAML config file (positional CLI arg `config`)
-    # If provided, values from this file will be merged at lower priority than CLI/env.
-    # Note that this yaml should not contain a nested `config` key.
-    config: Path | None = None
+    config: Path | None = Field(
+        default=None,
+        description=(
+            "YAML config file to load. Its values merge at lower priority than CLI/env. "
+            "Must not contain a nested 'config' key."
+        ),
+    )
 
-    # Verbosity
-    log_level: str = "INFO"
+    log_level: str = Field(
+        default="INFO",
+        description="Logging level (e.g., DEBUG, INFO, WARNING, ERROR).",
+    )
 
-    # Whether to confirm steps before they are executed
-    confirm_steps: bool = True
+    confirm_steps: bool = Field(
+        default=True,
+        description="If true, interactively confirm key steps before proceeding.",
+    )
 
-    # The language being studied
-    language_a: str
-    # The known/native language
-    language_b: str
+    language_a: str = Field(description="Target language being studied (e.g., German).")
+    language_b: str = Field(description="Known/native language (e.g., English).")
 
-    # The type of notes to create. Should be consistent with the LLM prompt.
-    note_type: Literal["forward_and_backward", "forward_only"] = Field(default="forward_and_backward")
+    note_type: Literal["forward_and_backward", "forward_only"] = Field(
+        default="forward_and_backward",
+        description="Type of Anki notes to create.",
+    )
 
-    # LLM configuration
-    llm: LLMConfig = Field(default_factory=LLMConfig)
+    llm: LLMConfig = Field(
+        default_factory=LLMConfig,
+        description="LLM configuration: provider, options, and credentials.",
+    )
 
-    # Text-to-Speech configuration
-    tts: Text2SpeechSettings = Field(default_factory=Text2SpeechSettings)
+    tts: Text2SpeechSettings = Field(
+        default_factory=Text2SpeechSettings,
+        description="Text-to-Speech configuration for languages and provider credentials.",
+    )
 
     @classmethod
     def settings_customise_sources(
