@@ -19,13 +19,18 @@ class OpenAIClient(LLMClient):
         wait=wait_exponential(),
         retry=retry_if_exception_type(openai.OpenAIError),
     )
-    def _call_llm(self, instructions: str, input_text: str) -> str:
+    def _call_llm(self, instructions: str, input_text: str) -> tuple[str, dict]:
         self._logger.info("Calling OpenAI API for model '%s', this may take a while...", self._model)
-        answer = self._client.responses.create(
+        response = self._client.responses.create(
             model=self._model,
             instructions=instructions,
             input=input_text,
             store=False,
         )
         self._logger.info("OpenAI API call completed")
-        return answer.output_text
+
+        usage = {
+            "model": self._model,
+            "usage": response.usage.to_dict(),
+        }
+        return response.output_text, usage

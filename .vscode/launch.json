@@ -11,7 +11,7 @@
             "python": "${workspaceFolder}/.venv/bin/python",
         },
         {
-            "name": "anker",
+            "name": "dev_test",
             "type": "debugpy",
             "request": "launch",
             "module": "anker.cli",
