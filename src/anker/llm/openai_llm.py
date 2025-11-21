@@ -1,5 +1,4 @@
 import openai
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from .llm_base import LLMClient
 from ..settings import LLMConfig
@@ -13,12 +12,7 @@ class OpenAIClient(LLMClient):
         self._client = openai.OpenAI(api_key=self._api_key)
         self._logger.debug("Initialized OpenAI client")
 
-    @retry(
-        reraise=True,
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(),
-        retry=retry_if_exception_type(openai.OpenAIError),
-    )
+    # we don't need retry here, it's handled within the openai sdk
     def _call_llm(self, instructions: str, input_text: str) -> tuple[str, dict]:
         self._logger.info("Calling OpenAI API for model '%s', this may take a while...", self._model)
         response = self._client.responses.create(
