@@ -39,13 +39,16 @@ class LLMOptions(StrictModel):
 
 
 class OpenAIProviderAccess(StrictModel):
-    """OpenAI provider credentials."""
+    """OpenAI-compatible API provider credentials."""
 
     api_key: SecretStr | None = Field(
         default=None,
-        description="OpenAI API key. Can be provided via env",
+        description="OpenAI-compatible API key. Can be provided via env",
     )
-
+    base_url: str | None = Field(
+        default=None,
+        description="URL of the openai-compatible API. `None` for for OpenAI itself. Can be provided via env",
+    )
 
 class LLMConfig(StrictModel):
     """LLM configuration: provider selection, runtime options, and credentials."""

@@ -114,10 +114,10 @@ def calculate_llm_cost(usage: dict) -> None:
         reasoning_price = output_price
 
     usage = usage["usage"]
-    cached_input_tokens = usage["input_tokens_details"]["cached_tokens"]
-    uncached_input_tokens = usage["input_tokens"] - cached_input_tokens
-    reasoning_tokens = usage["output_tokens_details"]["reasoning_tokens"]
-    output_tokens = usage["output_tokens"] - reasoning_tokens
+    cached_input_tokens = usage.get("prompt_tokens_details", {}).get("cached_tokens", 0)
+    uncached_input_tokens = usage["prompt_tokens"] - cached_input_tokens
+    reasoning_tokens = usage.get("completion_tokens_details", {}).get("reasoning_tokens", 0)
+    output_tokens = usage["completion_tokens"] - reasoning_tokens
     total_tokens = usage["total_tokens"]
     if (cached_input_tokens + uncached_input_tokens + reasoning_tokens + output_tokens) != total_tokens:
         logger.warning("Discrepancy in the tokens counts, the usage cost information is not reliable")

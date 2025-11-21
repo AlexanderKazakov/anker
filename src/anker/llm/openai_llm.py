@@ -5,21 +5,24 @@ from ..settings import LLMConfig, OpenAIProviderAccess
 
 
 class OpenAIClient(LLMClient):
+    """Any OpenAI-compatible API"""
     def __init__(self, llm_config: LLMConfig, openai_access: OpenAIProviderAccess) -> None:
         super().__init__()
         api_key = openai_access.api_key.get_secret_value()
         self._model = llm_config.options.model
-        self._client = openai.OpenAI(api_key=api_key)
-        self._logger.debug("Initialized OpenAI client")
+        self._client = openai.OpenAI(api_key=api_key, base_url=openai_access.base_url)
+        self._logger.debug("Initialized OpenAI client, model '%s', endpoint '%s'", self._model, openai_access.base_url)
 
     # we don't need retry here, it's handled within the openai sdk
     def _call_llm(self, instructions: str, input_text: str) -> tuple[str, dict]:
         self._logger.info("Calling OpenAI API for model '%s', this may take a while...", self._model)
-        response = self._client.responses.create(
+        # using old-style API, because not all providers support the new responses API
+        response = self._client.chat.completions.create(
             model=self._model,
-            instructions=instructions,
-            input=input_text,
-            store=False,
+            messages=[
+                {"role": "system", "content": instructions},
+                {"role": "user", "content": input_text},
+            ],
         )
         self._logger.info("OpenAI API call completed")
 
@@ -27,4 +30,4 @@ class OpenAIClient(LLMClient):
             "model": self._model,
             "usage": response.usage.to_dict(),
         }
-        return response.output_text, usage
+        return response.choices[0].message.content, usage
