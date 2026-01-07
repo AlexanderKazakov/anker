@@ -27,6 +27,7 @@ dev = [
     "pytest",
     "ruff",
     "mypy",
+    "mlflow",
 ]
 
 [project.scripts]

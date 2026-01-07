@@ -12,6 +12,7 @@ from .tsv import read_from_file, write_to_file
 from .llm.llm_factory import create_llm_client
 from .llm.prompt_builder import PromptBuilder
 from .logging import get_logger
+from .observability import MLflowTracker
 from .settings import Settings
 from .tts.tts_manager import TTSManager
 
@@ -21,6 +22,7 @@ class Pipeline:
         self.settings = settings
         self.logger = get_logger("anker.pipeline")
         self.console = Console()
+        self.mlflow_tracker = MLflowTracker(settings.mlflow)
 
         self.prompt = PromptBuilder(settings).build()
         self.logger.debug("Loaded LLM instructions:\n%s", self.prompt)
@@ -30,6 +32,10 @@ class Pipeline:
         self.anki_packager = AnkiDeckCreator(settings)
 
     def run(self) -> None:
+        with self.mlflow_tracker.run_context():
+            self._run_pipeline()
+
+    def _run_pipeline(self) -> None:
         vocab = self._load_or_generate_vocabulary()
 
         if not self.settings.anki_output:

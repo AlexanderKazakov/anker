@@ -26,6 +26,7 @@ llm:
   provider: openai
   options:
     model: gpt-5-mini
+    reasoning_effort: high
     prompt_template: ./settings/prompts/prompt_template.md.j2
     custom_instructions: ./settings/prompts/custom_instructions/german_english_b1.md
     few_shot_examples: ./settings/prompts/few_shot_examples/forward_and_backward_german_english_b1

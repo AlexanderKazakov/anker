@@ -21,6 +21,10 @@ class LLMOptions(StrictModel):
         default="gpt-5",
         description="LLM model identifier to use (e.g., gpt-4o, gpt-5).",
     )
+    reasoning_effort: Literal["none", "minimal", "low", "medium", "high", "xhigh"] | None = Field(
+        default=None,
+        description="Reasoning effort for reasoning models",
+    )
     prompt_template: Path = Field(
         default=Path("./settings/prompts/prompt_template.md.j2"),
         description="Path to the prompt or Jinja2 template file used to build the final prompt.",
@@ -116,6 +120,18 @@ class ProviderAccessSettings(StrictModel):
     aws: AWSProviderAccess | None = None
 
 
+class MLflowConfig(StrictModel):
+    """Configuration for MLflow tracking (optional)."""
+    tracking_uri: str | None = Field(
+        default=None,
+        description="MLflow tracking URI. If None, tracking is disabled.",
+    )
+    experiment_name: str = Field(
+        default="anker_experiment",
+        description="MLflow experiment name.",
+    )
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="ANKER__",
@@ -130,6 +146,11 @@ class Settings(BaseSettings):
         cli_hide_none_type=True,
         cli_avoid_json=True,
         cli_enforce_required=False,
+    )
+
+    mlflow: MLflowConfig = Field(
+        default_factory=MLflowConfig,
+        description="MLflow configuration.",
     )
 
     text_input: Path | None = Field(
@@ -238,5 +259,3 @@ class AnkerYamlSettingsSource(PydanticBaseSettingsSource):
         # Not used because this source overrides __call__ to return the full mapping.
         # Implemented just to satisfy the abstract interface.
         return None, field_name, False
-
-
