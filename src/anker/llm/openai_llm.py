@@ -11,7 +11,8 @@ class OpenAIClient(LLMClient):
         api_key = openai_access.api_key.get_secret_value()
         self._model = llm_config.options.model
         self._client = openai.OpenAI(api_key=api_key, base_url=openai_access.base_url)
-        self._logger.debug("Initialized OpenAI client, model '%s', endpoint '%s'", self._model, openai_access.base_url)
+        endpoint = openai_access.base_url or "[OpenAI-default-endpoint]"
+        self._logger.info("Initialized OpenAI client, model '%s', endpoint '%s'", self._model, endpoint)
 
     # we don't need retry here, it's handled within the openai sdk
     def _call_llm(self, instructions: str, input_text: str) -> tuple[str, dict]:
@@ -19,6 +20,7 @@ class OpenAIClient(LLMClient):
         # using old-style API, because not all providers support the new responses API
         response = self._client.chat.completions.create(
             model=self._model,
+            reasoning_effort="medium",
             messages=[
                 {"role": "system", "content": instructions},
                 {"role": "user", "content": input_text},
