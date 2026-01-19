@@ -1,5 +1,5 @@
 [project]
-name = "anker"
+name = "ankify"
 version = "0.1.0"
 description = "Arbitrary text to Anki deck with text-to-speech audio"
 readme = "README.md"
@@ -31,7 +31,7 @@ dev = [
 ]
 
 [project.scripts]
-anker = "anker.cli:app"
+ankify = "ankify.cli:app"
 
 [build-system]
 requires = ["hatchling"]
@@ -44,14 +44,14 @@ line-length = 88
 strict = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/anker"]
+packages = ["src/ankify"]
 include = [
-  "src/anker/anki/templates/*.html",
-  "src/anker/anki/templates/*.css",
+  "src/ankify/anki/templates/*.html",
+  "src/ankify/anki/templates/*.css",
 ]
 
 [tool.hatch.build.targets.sdist]
 include = [
-  "src/anker/anki/templates/*.html",
-  "src/anker/anki/templates/*.css",
+  "src/ankify/anki/templates/*.html",
+  "src/ankify/anki/templates/*.css",
 ]

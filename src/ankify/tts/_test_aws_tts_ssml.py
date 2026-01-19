@@ -13,7 +13,7 @@ from ..settings import Settings, AWSProviderAccess, TTSVoiceOptions
 from .aws_tts import AWSPollySingleLanguageClient
 
 
-logger = get_logger("anker.tts.aws.ssml_test")
+logger = get_logger("ankify.tts.aws.ssml_test")
 setup_logging("DEBUG")
 
 

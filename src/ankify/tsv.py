@@ -5,7 +5,7 @@ from .vocab_entry import VocabEntry
 from .logging import get_logger
 
 
-logger = get_logger("anker.tsv")
+logger = get_logger("ankify.tsv")
 
 
 def read_from_string(text: str) -> list[VocabEntry]:

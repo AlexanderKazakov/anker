@@ -14,7 +14,7 @@ class AnkiDeckCreator:
     AllowedNoteTypes = Literal["forward_and_backward", "forward_only"]
 
     def __init__(self, settings: Settings) -> None:
-        self.logger = get_logger("anker.anki.anki_deck_creator")
+        self.logger = get_logger("ankify.anki.anki_deck_creator")
         self.output_file = settings.anki_output
         self._fix_genanki_sort_type()
         self.anki_note_model = self._create_anki_note_model(settings.note_type)
@@ -29,7 +29,7 @@ class AnkiDeckCreator:
         output_path = Path(self.output_file)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        deck = genanki.Deck(AnkiGuidGenerator.random_int_guid(), "anker_deck")
+        deck = genanki.Deck(AnkiGuidGenerator.random_int_guid(), "ankify_deck")
         media_files = set()
         for entry in vocab:
             note = self._create_anki_note(entry)
@@ -74,12 +74,12 @@ class AnkiDeckCreator:
         
         self.logger.info("Loading Anki note model from templates")
 
-        css = _load("anker.anki.templates", "styles.css")
+        css = _load("ankify.anki.templates", "styles.css")
 
-        forward_qfmt = _load("anker.anki.templates", "forward_qfmt.html")
-        forward_afmt = _load("anker.anki.templates", "forward_afmt.html")
-        backward_qfmt = _load("anker.anki.templates", "backward_qfmt.html")
-        backward_afmt = _load("anker.anki.templates", "backward_afmt.html")
+        forward_qfmt = _load("ankify.anki.templates", "forward_qfmt.html")
+        forward_afmt = _load("ankify.anki.templates", "forward_afmt.html")
+        backward_qfmt = _load("ankify.anki.templates", "backward_qfmt.html")
+        backward_afmt = _load("ankify.anki.templates", "backward_afmt.html")
 
         fields = [
             {"name": "Front"},
@@ -114,7 +114,7 @@ class AnkiDeckCreator:
         else:
             raise ValueError(f"Invalid note type: {note_type}")
 
-        model_name = f"Anker_{note_type}"
+        model_name = f"Ankify_{note_type}"
         model = genanki.Model(
             model_id=AnkiGuidGenerator.hash_based_int_guid(model_name),
             name=model_name,

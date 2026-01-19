@@ -12,8 +12,8 @@ from .tts_base import TTSSingleLanguageClient
 
 class AWSPollySingleLanguageClient(TTSSingleLanguageClient):
     ssml_mapping = [
-        ("/", "<break strength='medium'/>", "__anker_sentinel_slash__"),
-        (";", "<break strength='strong'/>", "__anker_sentinel_semicolon__"),
+        ("/", "<break strength='medium'/>", "__ankify_sentinel_slash__"),
+        (";", "<break strength='strong'/>", "__ankify_sentinel_semicolon__"),
     ]
 
     @staticmethod
@@ -43,7 +43,7 @@ class AWSPollySingleLanguageClient(TTSSingleLanguageClient):
         }
 
     def __init__(self, access_settings: AWSProviderAccess, language_settings: TTSVoiceOptions):
-        self.logger = get_logger("anker.tts.aws")
+        self.logger = get_logger("ankify.tts.aws")
         self.logger.debug(
             "Initializing AWS Polly client for voice id '%s' and engine '%s'", 
             language_settings.voice_id, language_settings.engine,

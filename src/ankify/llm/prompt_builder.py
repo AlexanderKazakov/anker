@@ -14,7 +14,7 @@ def jinja2_raise(message: str) -> None:
 class PromptBuilder:
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
-        self._logger = get_logger("anker.llm.prompt_builder")
+        self._logger = get_logger("ankify.llm.prompt_builder")
 
     def build(self) -> str:
         prompt_template = self._read_prompt_template()

@@ -127,20 +127,20 @@ class MLflowConfig(StrictModel):
         description="MLflow tracking URI. If None, tracking is disabled.",
     )
     experiment_name: str = Field(
-        default="anker_experiment",
+        default="ankify_experiment",
         description="MLflow experiment name.",
     )
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_prefix="ANKER__",
+        env_prefix="ANKIFY__",
         env_nested_delimiter="__",
         env_file=".env",
         env_file_encoding="utf-8",
         nested_model_default_partial_update=True,
         cli_parse_args=True,
-        cli_prog_name="anker",
+        cli_prog_name="ankify",
         cli_kebab_case=True,
         cli_implicit_flags=True,
         cli_hide_none_type=True,
@@ -158,11 +158,11 @@ class Settings(BaseSettings):
         description="Path to input text file. If omitted, the text will be read from stdin.",
     )
     table_output: Path | None = Field(
-        default=Path("./anker_vocab.tsv"),
+        default=Path("./ankify_vocab.tsv"),
         description="Where to write the TSV vocabulary table. Set to null to skip writing.",
     )
     anki_output: Path | None = Field(
-        default=Path("./anker_deck.apkg"),
+        default=Path("./ankify_deck.apkg"),
         description="Where to write the generated Anki deck (.apkg). Set to null to skip packaging.",
     )
 
@@ -221,12 +221,12 @@ class Settings(BaseSettings):
             init_settings,
             env_settings,
             dotenv_settings,
-            AnkerYamlSettingsSource(settings_cls),
+            AnkifyYamlSettingsSource(settings_cls),
             file_secret_settings,
         )
 
 
-class AnkerYamlSettingsSource(PydanticBaseSettingsSource):
+class AnkifyYamlSettingsSource(PydanticBaseSettingsSource):
     """
     Load settings from a YAML file.
     Returns a flat dict matching Settings fields structure; 

@@ -5,7 +5,7 @@ from ..logging import get_logger
 
 
 def create_llm_client(settings: Settings) -> LLMClient:
-    logger = get_logger("anker.llm.factory")
+    logger = get_logger("ankify.llm.factory")
     llm_config = settings.llm
     provider = llm_config.provider
     if provider == "openai":

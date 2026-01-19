@@ -46,7 +46,7 @@ def setup_logging(
     if quiet_third_party:
         # Allow all logs from our application namespace, but only WARNING+
         # from any other (third-party) loggers without having to list them.
-        app_prefix = __name__.split(".")[0]  # "anker"
+        app_prefix = __name__.split(".")[0]  # "ankify"
 
         class _OnlyAppOrThirdPartyWarnings(logging.Filter):
             def filter(self, record: logging.LogRecord) -> bool:

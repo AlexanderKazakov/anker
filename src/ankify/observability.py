@@ -4,7 +4,7 @@ from typing import Iterator, Any
 from .logging import get_logger
 from .settings import MLflowConfig
 
-logger = get_logger("anker.observability")
+logger = get_logger("ankify.observability")
 
 try:
     import mlflow

@@ -9,7 +9,7 @@ from .llm_cost_tracker import calculate_llm_cost
 
 class LLMClient(ABC):
     def __init__(self) -> None:
-        self._logger = get_logger(f"anker.llm.{self.__class__.__name__}")
+        self._logger = get_logger(f"ankify.llm.{self.__class__.__name__}")
 
     def generate_vocabulary(self, instructions: str, input_text: str) -> list[VocabEntry]:
         self._logger.info("Generating vocabulary entries with LLM")

@@ -14,7 +14,7 @@ from ..logging import get_logger
 logger = get_logger(__name__)
 
 # Cache file location
-CACHE_DIR = Path.home() / ".cache" / "anker"
+CACHE_DIR = Path.home() / ".cache" / "ankify"
 PRICING_CACHE_FILE = CACHE_DIR / "llm_pricing.json"
 PRICING_CACHE_DURATION = timedelta(hours=24)
 

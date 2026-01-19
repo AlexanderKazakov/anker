@@ -8,7 +8,7 @@ from ..logging import get_logger, setup_logging
 from ..settings import Settings, OpenAIProviderAccess
 
 
-logger = get_logger("anker.tts.openai.test")
+logger = get_logger("ankify.tts.openai.test")
 setup_logging("DEBUG")
 
 

@@ -15,7 +15,7 @@ def app() -> None:
     settings = CliApp.run(Settings)
 
     setup_logging(settings.log_level)
-    logger = get_logger("anker.cli")
+    logger = get_logger("ankify.cli")
     
     logger.info(
         "Settings loaded:\n%s", yaml.safe_dump(

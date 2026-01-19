@@ -1,4 +1,4 @@
-# Anker: raw text to Anki vocabulary deck with speech
+# Ankify: raw text to Anki vocabulary deck with speech
 
 A Python command-line application that 
 - takes arbitrary text (a book fragment, a foreign language lesson chat export, ...) 
@@ -19,17 +19,17 @@ A Python command-line application that
 
 ## Installation
 ```bash
-git clone https://github.com/AlexanderKazakov/anker.git
-cd anker
+git clone https://github.com/AlexanderKazakov/ankify.git
+cd ankify
 uv venv --python 3.12
 uv pip install -e .[dev]
-uv run anker --help
+uv run ankify --help
 ```
 
 
 ## Usage
 ```bash
-uv run anker --config config.yaml [--options]
+uv run ankify --config config.yaml [--options]
 ```
 See config examples in the `settings` directory.
 
@@ -77,7 +77,7 @@ The application can generate two different types of notes:
 - A note with two cards: the 'Forward Card' and the 'Backward Card' — `forward_and_backward` in config — **default** — to remember 'Back' given 'Front' and vice versa
 - A note with a single 'Forward Card' — `forward_only` in config — just to remember 'Back' given 'Front'
 
-The HTML/CSS templates used to render the cards are stored in [separate files within the package](src/anker/anki/templates). They are loaded from there on every application run.
+The HTML/CSS templates used to render the cards are stored in [separate files within the package](src/ankify/anki/templates). They are loaded from there on every application run.
 
 ### Consistency between the LLM prompt and the note type
 The prompt template is already conditioned on the note type and languages.

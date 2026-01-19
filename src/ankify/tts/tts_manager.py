@@ -30,7 +30,7 @@ class TTSManager:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
         config: Text2SpeechSettings = settings.tts
-        self.logger = get_logger("anker.tts.manager")
+        self.logger = get_logger("ankify.tts.manager")
         self.logger.debug("Initializing TTSManager with languages: %s", ", ".join(config.languages.keys()))
 
         self.tts_clients: dict[str, TTSSingleLanguageClient] = {
@@ -53,7 +53,7 @@ class TTSManager:
                 self.tts_clients[lang].synthesize(lang_entries)
                 # write audio to disk, keep paths instead of bytes
                 for text in lang_entries.keys():
-                    audio_file_path = audio_dir / f"anker-{uuid.uuid4()}.mp3"
+                    audio_file_path = audio_dir / f"ankify-{uuid.uuid4()}.mp3"
                     audio_file_path.write_bytes(lang_entries[text])
                     lang_entries[text] = audio_file_path
         

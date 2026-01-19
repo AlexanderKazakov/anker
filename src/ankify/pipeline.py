@@ -20,7 +20,7 @@ from .tts.tts_manager import TTSManager
 class Pipeline:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
-        self.logger = get_logger("anker.pipeline")
+        self.logger = get_logger("ankify.pipeline")
         self.console = Console()
         self.mlflow_tracker = MLflowTracker(settings.mlflow)
 
@@ -42,7 +42,7 @@ class Pipeline:
             self.logger.info("No anki_output specified; skipping TTS and Anki packaging")
             return
         
-        with TemporaryDirectory(prefix="anker_media_") as audio_dir:
+        with TemporaryDirectory(prefix="ankify_media_") as audio_dir:
             self.tts.synthesize(vocab, Path(audio_dir))
             self._build_anki_deck(vocab)
 
