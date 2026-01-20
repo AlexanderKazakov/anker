@@ -13,6 +13,7 @@ classifiers = [
 dependencies = [
     "openai",
     "boto3",
+    "edge-tts",
     "genanki",
     "pydantic",
     "pydantic-settings",

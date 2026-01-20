@@ -11,6 +11,7 @@ from ..settings import (
 from ..logging import get_logger
 from .tts_base import TTSSingleLanguageClient
 from .aws_tts import AWSPollySingleLanguageClient
+from .edge_tts import EdgeTTSSingleLanguageClient
 
 
 def create_tts_single_language_client(
@@ -20,6 +21,10 @@ def create_tts_single_language_client(
     if config.provider == "aws":
         return AWSPollySingleLanguageClient(
             access_settings=providers.aws,
+            language_settings=config.options,
+        )
+    if config.provider == "edge":
+        return EdgeTTSSingleLanguageClient(
             language_settings=config.options,
         )
     else:

@@ -31,25 +31,43 @@ llm:
     custom_instructions: ./settings/prompts/custom_instructions/german_english_b1.md
     few_shot_examples: ./settings/prompts/few_shot_examples/forward_and_backward_german_english_b1
 
-# Text-to-Speech: AWS Polly voices:
+# Text-to-Speech
+# AWS Polly voices:
 # https://docs.aws.amazon.com/polly/latest/dg/available-voices.html
+# Edge TTS voices:
+# `$ edge-tts --list-voices`
 tts:
   languages:
+    # AWS Polly voices:
+    # english:
+    #   provider: aws
+    #   options:
+    #     voice_id: Gregory
+    #     engine: neural
+    # german:
+    #   provider: aws
+    #   options:
+    #     voice_id: Daniel
+    #     engine: neural
+    # russian:
+    #   provider: aws
+    #   options:
+    #     voice_id: Tatyana
+    #     engine: standard
+
+    # Edge TTS voices:
     english:
-      provider: aws
+      provider: edge
       options:
-        voice_id: Gregory
-        engine: neural
+        voice_id: en-US-AndrewNeural
     german:
-      provider: aws
+      provider: edge
       options:
-        voice_id: Daniel
-        engine: neural
+        voice_id: de-DE-ConradNeural
     russian:
-      provider: aws
+      provider: edge
       options:
-        voice_id: Tatyana
-        engine: standard
+        voice_id: ru-RU-DmitryNeural
 
 # Provider access settings
 providers:

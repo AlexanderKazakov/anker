@@ -4,8 +4,8 @@ from typing import Iterable
 
 import openai
 
-from ..logging import get_logger, setup_logging
-from ..settings import Settings, OpenAIProviderAccess
+from ...logging import get_logger, setup_logging
+from ...settings import Settings, OpenAIProviderAccess
 
 
 logger = get_logger("ankify.tts.openai.test")

@@ -71,17 +71,17 @@ class TTSVoiceOptions(StrictModel):
     """Voice configuration used by the TTS provider."""
 
     voice_id: str = Field(description="Provider voice identifier to synthesize with (e.g., Polly voice ID).")
-    engine: Literal["standard", "neural"] = Field(
-        default="neural",
-        description="Synthesis engine type if supported by the provider.",
+    engine: Literal["standard", "neural"] | None = Field(
+        default=None,
+        description="Synthesis engine type (if required by the provider).",
     )
 
 
 class LanguageTTSConfig(StrictModel):
     """Per-language TTS setup: provider and voice options."""
 
-    provider: Literal["aws"] = Field(
-        default="aws",
+    provider: Literal["aws", "edge"] = Field(
+        default="edge",
         description="TTS provider backend.",
     )
     options: TTSVoiceOptions = Field(description="Voice options for this language.")

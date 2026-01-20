@@ -2,24 +2,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "_test_aws_tts_ssml",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "ankify.tts._test_aws_tts_ssml",
-            "cwd": "${workspaceFolder}",
-            "console": "integratedTerminal",
-            "python": "${workspaceFolder}/.venv/bin/python",
-        },
-        {
-            "name": "_test_openai_tts_ssml",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "ankify.tts._test_openai_tts_ssml",
-            "cwd": "${workspaceFolder}",
-            "console": "integratedTerminal",
-            "python": "${workspaceFolder}/.venv/bin/python",
-        },
-        {
             "name": "dev_test",
             "type": "debugpy",
             "request": "launch",
@@ -57,6 +39,33 @@
                 "${workspaceFolder}/settings/english_russian.yaml"
             ],
             "python": "${workspaceFolder}/.venv/bin/python"
-        }
+        },
+        {
+            "name": "_test_aws_tts_ssml",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "ankify.tts._test._test_aws_tts_ssml",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/.venv/bin/python",
+        },
+        {
+            "name": "_test_openai_tts_ssml",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "ankify.tts._test._test_openai_tts_ssml",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/.venv/bin/python",
+        },
+        {
+            "name": "_test_edge_tts_ssml",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "ankify.tts._test._test_edge_tts_ssml",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/.venv/bin/python",
+        },
     ]
 }
