@@ -12,12 +12,12 @@ class OpenAIClient(LLMClient):
         self._reasoning_effort = llm_config.options.reasoning_effort
         self._client = openai.OpenAI(api_key=api_key, base_url=openai_access.base_url)
         endpoint = openai_access.base_url or "[OpenAI-default-endpoint]"
-        self._logger.info("Initialized OpenAI client, model '%s', endpoint '%s', reasoning_effort '%s'", 
+        self._logger.info("Initialized OpenAI-compatible client, model '%s', endpoint '%s', reasoning_effort '%s'", 
                           self._model, endpoint, self._reasoning_effort)
 
     # we don't need retry here, it's handled within the openai sdk
     def _call_llm(self, instructions: str, input_text: str) -> tuple[str, dict]:
-        self._logger.info("Calling OpenAI API for model '%s', this may take a while...", self._model)
+        self._logger.info("Calling LLM API, this may take a while...")
         
         kwargs = {
             "model": self._model,
@@ -31,6 +31,6 @@ class OpenAIClient(LLMClient):
 
         # using old-style API, because not all providers support the new responses API
         response = self._client.chat.completions.create(**kwargs)
-        self._logger.info("OpenAI API call completed")
+        self._logger.info("LLM API call completed")
 
         return response.choices[0].message.content, response.usage

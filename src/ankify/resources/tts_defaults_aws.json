@@ -1,0 +1,174 @@
+{
+    "arabic": {
+        "voice_id": "Zeina",
+        "engine": "standard"
+    },
+    "arabic_gulf": {
+        "voice_id": "Zayd",
+        "engine": "neural"
+    },
+    "dutch_belgian": {
+        "voice_id": "Lisa",
+        "engine": "neural"
+    },
+    "catalan": {
+        "voice_id": "Arlet",
+        "engine": "neural"
+    },
+    "czech": {
+        "voice_id": "Jitka",
+        "engine": "neural"
+    },
+    "chinese_cantonese": {
+        "voice_id": "Hiujin",
+        "engine": "neural"
+    },
+    "chinese": {
+        "voice_id": "Zhiyu",
+        "engine": "neural"
+    },
+    "danish": {
+        "voice_id": "Sofie",
+        "engine": "neural"
+    },
+    "dutch": {
+        "voice_id": "Laura",
+        "engine": "neural"
+    },
+    "english": {
+        "voice_id": "Gregory",
+        "engine": "neural"
+    },
+    "english_australian": {
+        "voice_id": "Olivia",
+        "engine": "neural"
+    },
+    "english_british": {
+        "voice_id": "Arthur",
+        "engine": "neural"
+    },
+    "english_indian": {
+        "voice_id": "Kajal",
+        "engine": "neural"
+    },
+    "english_ireland": {
+        "voice_id": "Niamh",
+        "engine": "neural"
+    },
+    "english_new_zealand": {
+        "voice_id": "Aria",
+        "engine": "neural"
+    },
+    "english_singaporean": {
+        "voice_id": "Jasmine",
+        "engine": "neural"
+    },
+    "english_south_african": {
+        "voice_id": "Ayanda",
+        "engine": "neural"
+    },
+    "english_us": {
+        "voice_id": "Matthew",
+        "engine": "neural"
+    },
+    "english_welsh": {
+        "voice_id": "Geraint",
+        "engine": "standard"
+    },
+    "finnish": {
+        "voice_id": "Suvi",
+        "engine": "neural"
+    },
+    "french": {
+        "voice_id": "Remi",
+        "engine": "neural"
+    },
+    "french_belgian": {
+        "voice_id": "Isabelle",
+        "engine": "neural"
+    },
+    "french_canadian": {
+        "voice_id": "Liam",
+        "engine": "neural"
+    },
+    "german": {
+        "voice_id": "Daniel",
+        "engine": "neural"
+    },
+    "german_austrian": {
+        "voice_id": "Hannah",
+        "engine": "neural"
+    },
+    "german_swiss": {
+        "voice_id": "Sabrina",
+        "engine": "neural"
+    },
+    "hindi": {
+        "voice_id": "Kajal",
+        "engine": "neural"
+    },
+    "icelandic": {
+        "voice_id": "Karl",
+        "engine": "standard"
+    },
+    "italian": {
+        "voice_id": "Adriano",
+        "engine": "neural"
+    },
+    "japanese": {
+        "voice_id": "Takumi",
+        "engine": "neural"
+    },
+    "korean": {
+        "voice_id": "Seoyeon",
+        "engine": "neural"
+    },
+    "norwegian": {
+        "voice_id": "Ida",
+        "engine": "neural"
+    },
+    "polish": {
+        "voice_id": "Ola",
+        "engine": "neural"
+    },
+    "portuguese": {
+        "voice_id": "Thiago",
+        "engine": "neural"
+    },
+    "portuguese_european": {
+        "voice_id": "Ines",
+        "engine": "neural"
+    },
+    "romanian": {
+        "voice_id": "Carmen",
+        "engine": "standard"
+    },
+    "russian": {
+        "voice_id": "Tatyana",
+        "engine": "standard"
+    },
+    "spanish": {
+        "voice_id": "Sergio",
+        "engine": "neural"
+    },
+    "spanish_mexican": {
+        "voice_id": "Andres",
+        "engine": "neural"
+    },
+    "spanish_us": {
+        "voice_id": "Pedro",
+        "engine": "neural"
+    },
+    "swedish": {
+        "voice_id": "Elin",
+        "engine": "neural"
+    },
+    "turkish": {
+        "voice_id": "Burcu",
+        "engine": "neural"
+    },
+    "welsh": {
+        "voice_id": "Gwyneth",
+        "engine": "standard"
+    }
+}

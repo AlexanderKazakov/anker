@@ -5,7 +5,6 @@ import genanki
 from pathlib import Path
 from importlib import resources
 
-from ..settings import Settings
 from ..vocab_entry import VocabEntry
 from ..logging import get_logger
 
@@ -13,11 +12,12 @@ from ..logging import get_logger
 class AnkiDeckCreator:
     AllowedNoteTypes = Literal["forward_and_backward", "forward_only"]
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, output_file: Path, deck_name: str, note_type: AllowedNoteTypes) -> None:
         self.logger = get_logger("ankify.anki.anki_deck_creator")
-        self.output_file = settings.anki_output
+        self.output_file = output_file
+        self.deck_name = deck_name
         self._fix_genanki_sort_type()
-        self.anki_note_model = self._create_anki_note_model(settings.note_type)
+        self.anki_note_model = self._create_anki_note_model(note_type)
 
     def write_anki_deck(self, vocab: list[VocabEntry]) -> None:
         if not vocab:
@@ -29,7 +29,7 @@ class AnkiDeckCreator:
         output_path = Path(self.output_file)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        deck = genanki.Deck(AnkiGuidGenerator.random_int_guid(), "ankify_deck")
+        deck = genanki.Deck(AnkiGuidGenerator.random_int_guid(), self.deck_name)
         media_files = set()
         for entry in vocab:
             note = self._create_anki_note(entry)

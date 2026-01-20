@@ -9,7 +9,7 @@ def create_llm_client(settings: Settings) -> LLMClient:
     llm_config = settings.llm
     provider = llm_config.provider
     if provider == "openai":
-        logger.debug("Creating LLM client for provider '%s' and model '%s'", provider, llm_config.options.model)
+        logger.debug("Creating OpenAI-compatible API LLM client")
         openai_access = settings.providers.openai
         return OpenAIClient(llm_config=llm_config, openai_access=openai_access)
     else:

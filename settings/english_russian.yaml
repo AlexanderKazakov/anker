@@ -4,6 +4,8 @@ text_input: ./tmp/english_russian.txt
 table_output: ./tmp/english_russian.tsv
 # Path to the output Anki file. If empty, it will not be created (and TTS step will be skipped)
 anki_output: ./tmp/english_russian.apkg
+# Name of the generated Anki deck (it's not the file name, it's the deck name within Anki)
+anki_deck_name: English
 
 # Whether to confirm steps before they are executed
 confirm_steps: true
@@ -31,22 +33,9 @@ llm:
     custom_instructions: ./settings/prompts/custom_instructions/english_russian_c1.md
     few_shot_examples: ./settings/prompts/few_shot_examples/forward_only_english_russian_c1
 
-# Text-to-Speech: AWS Polly voices:
-# https://docs.aws.amazon.com/polly/latest/dg/available-voices.html
 tts:
-  languages:
-    english:
-      provider: aws
-      options:
-        voice_id: Gregory
-        engine: neural
-    russian:
-      provider: aws
-      options:
-        voice_id: Tatyana
-        engine: standard
+  default_provider: aws
 
-# Provider access settings
 providers:
   openai:
     api_key:

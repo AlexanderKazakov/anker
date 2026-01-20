@@ -37,37 +37,39 @@ llm:
 # Edge TTS voices:
 # `$ edge-tts --list-voices`
 tts:
-  languages:
-    # AWS Polly voices:
-    # english:
-    #   provider: aws
-    #   options:
-    #     voice_id: Gregory
-    #     engine: neural
-    # german:
-    #   provider: aws
-    #   options:
-    #     voice_id: Daniel
-    #     engine: neural
-    # russian:
-    #   provider: aws
-    #   options:
-    #     voice_id: Tatyana
-    #     engine: standard
+  default_provider: edge
 
-    # Edge TTS voices:
-    english:
-      provider: edge
-      options:
-        voice_id: en-US-AndrewNeural
-    german:
-      provider: edge
-      options:
-        voice_id: de-DE-ConradNeural
-    russian:
-      provider: edge
-      options:
-        voice_id: ru-RU-DmitryNeural
+  # languages:
+  # AWS Polly voices:
+  # english:
+  #   provider: aws
+  #   options:
+  #     voice_id: Gregory
+  #     engine: neural
+  # german:
+  #   provider: aws
+  #   options:
+  #     voice_id: Daniel
+  #     engine: neural
+  # russian:
+  #   provider: aws
+  #   options:
+  #     voice_id: Tatyana
+  #     engine: standard
+
+  # Edge TTS voices:
+  # english:
+  #   provider: edge
+  #   options:
+  #     voice_id: en-US-AndrewNeural
+  # german:
+  #   provider: edge
+  #   options:
+  #     voice_id: de-DE-ConradNeural
+  # russian:
+  #   provider: edge
+  #   options:
+  #     voice_id: ru-RU-DmitryNeural
 
 # Provider access settings
 providers:

@@ -77,10 +77,13 @@ class TTSVoiceOptions(StrictModel):
     )
 
 
+TTSProvider = Literal["aws", "edge"]
+
+
 class LanguageTTSConfig(StrictModel):
     """Per-language TTS setup: provider and voice options."""
 
-    provider: Literal["aws", "edge"] = Field(
+    provider: TTSProvider = Field(
         default="edge",
         description="TTS provider backend.",
     )
@@ -106,10 +109,14 @@ class AWSProviderAccess(StrictModel):
 
 class Text2SpeechSettings(StrictModel):
     """Text-to-Speech configuration."""
+    default_provider: TTSProvider = Field(
+        default="edge",
+        description="Default TTS provider to use if no specific settings are set for a language.",
+    )
 
-    languages: dict[str, LanguageTTSConfig] = Field(
-        default_factory=dict,
-        description="Mapping of language code to its TTS configuration.",
+    languages: dict[str, LanguageTTSConfig] | None = Field(
+        default=None,
+        description="Optional specific settings for TTS for languages. If not set, defaults will be used.",
     )
 
 
@@ -163,7 +170,11 @@ class Settings(BaseSettings):
     )
     anki_output: Path | None = Field(
         default=Path("./ankify_deck.apkg"),
-        description="Where to write the generated Anki deck (.apkg). Set to null to skip packaging.",
+        description="Where to write the generated Anki deck file (.apkg). Set to null to skip packaging.",
+    )
+    anki_deck_name: str = Field(
+        default="ankify_deck",
+        description="Name of the generated Anki deck (it's not the file name, it's the deck name within Anki).",
     )
 
     config: Path | None = Field(

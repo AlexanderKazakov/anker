@@ -28,8 +28,15 @@ class Pipeline:
         self.logger.debug("Loaded LLM instructions:\n%s", self.prompt)
         
         self.llm = create_llm_client(settings)
-        self.tts = TTSManager(settings)
-        self.anki_packager = AnkiDeckCreator(settings)
+        self.tts = TTSManager(
+            tts_settings=settings.tts,
+            provider_settings=settings.providers,
+        )
+        self.anki_packager = AnkiDeckCreator(
+            output_file=settings.anki_output,
+            deck_name=settings.anki_deck_name,
+            note_type=settings.note_type,
+        )
 
     def run(self) -> None:
         with self.mlflow_tracker.run_context():
