@@ -37,7 +37,7 @@ llm:
 # Edge TTS voices:
 # `$ edge-tts --list-voices`
 tts:
-  default_provider: edge
+  # default_provider: edge
   # default_provider: aws
 
   # languages:

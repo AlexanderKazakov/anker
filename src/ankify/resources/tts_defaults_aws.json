@@ -19,7 +19,7 @@
         "voice_id": "Jitka",
         "engine": "neural"
     },
-    "chinese_cantonese": {
+    "cantonese": {
         "voice_id": "Hiujin",
         "engine": "neural"
     },
