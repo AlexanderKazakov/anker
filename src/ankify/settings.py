@@ -139,6 +139,9 @@ class MLflowConfig(StrictModel):
     )
 
 
+NoteType = Literal["forward_and_backward", "forward_only"]
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="ANKIFY__",
@@ -173,7 +176,7 @@ class Settings(BaseSettings):
         description="Where to write the generated Anki deck file (.apkg). Set to null to skip packaging.",
     )
     anki_deck_name: str = Field(
-        default="ankify_deck",
+        default="Ankify",
         description="Name of the generated Anki deck (it's not the file name, it's the deck name within Anki).",
     )
 
@@ -198,7 +201,7 @@ class Settings(BaseSettings):
     language_a: str = Field(description="Target language being studied (e.g., German).")
     language_b: str = Field(description="Known/native language (e.g., English).")
 
-    note_type: Literal["forward_and_backward", "forward_only"] = Field(
+    note_type: NoteType = Field(
         default="forward_and_backward",
         description="Type of Anki notes to create.",
     )

@@ -1,4 +1,3 @@
-from typing import Literal
 import hashlib
 import secrets
 import genanki
@@ -7,12 +6,11 @@ from importlib import resources
 
 from ..vocab_entry import VocabEntry
 from ..logging import get_logger
+from ..settings import NoteType
 
 
 class AnkiDeckCreator:
-    AllowedNoteTypes = Literal["forward_and_backward", "forward_only"]
-
-    def __init__(self, output_file: Path, deck_name: str, note_type: AllowedNoteTypes) -> None:
+    def __init__(self, output_file: Path, deck_name: str, note_type: NoteType) -> None:
         self.logger = get_logger("ankify.anki.anki_deck_creator")
         self.output_file = output_file
         self.deck_name = deck_name
@@ -60,7 +58,7 @@ class AnkiDeckCreator:
         )
         return note
 
-    def _create_anki_note_model(self, note_type: AllowedNoteTypes) -> genanki.Model:
+    def _create_anki_note_model(self, note_type: NoteType) -> genanki.Model:
         def _load(package: str, filename: str) -> str:
             try:
                 return resources.files(package).joinpath(filename).read_text(encoding="utf-8")

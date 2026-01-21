@@ -23,7 +23,11 @@ class DefaultTTSConfigurator:
 
         language = language.lower()
         if language not in self.defaults:
-            raise ValueError(f"No default voice exists for language '{language}' (provider: {self.default_provider}).")
+            raise ValueError(
+                f"No default voice exists for language '{language}' (provider: {self.default_provider}). "
+                f"Make sure you are using a valid language code. "
+                f"Available language codes: {list(self.defaults.keys())}"
+            )
         
         value = self.defaults[language]
         options = TTSVoiceOptions(**value)

@@ -35,11 +35,3 @@ llm:
 
 tts:
   default_provider: aws
-
-providers:
-  openai:
-    api_key:
-  aws:
-    access_key_id:
-    secret_access_key:
-    region: eu-central-1

@@ -38,6 +38,7 @@ llm:
 # `$ edge-tts --list-voices`
 tts:
   default_provider: edge
+  # default_provider: aws
 
   # languages:
   # AWS Polly voices:
@@ -70,12 +71,11 @@ tts:
   #   provider: edge
   #   options:
   #     voice_id: ru-RU-DmitryNeural
-
 # Provider access settings
-providers:
-  openai:
-    api_key:
-  aws:
-    access_key_id:
-    secret_access_key:
-    region: eu-central-1
+# providers:
+#   openai:
+#     api_key:
+#   aws:
+#     access_key_id:
+#     secret_access_key:
+#     region: eu-central-1
