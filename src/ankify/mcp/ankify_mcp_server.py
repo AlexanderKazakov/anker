@@ -10,13 +10,13 @@ from dotenv import load_dotenv
 
 from mcp.server.fastmcp import FastMCP
 
-from ..anki.anki_deck_creator import AnkiDeckCreator
-from ..llm.jinja2_prompt_formatter import PromptRenderer
-from ..settings import AWSProviderAccess, AzureProviderAccess, NoteType, ProviderAccessSettings, Text2SpeechSettings
-from ..tsv import read_from_string
-from ..tts.tts_manager import TTSManager
-from ..vocab_entry import VocabEntry
-from ..logging import get_logger
+from ankify.anki.anki_deck_creator import AnkiDeckCreator
+from ankify.llm.jinja2_prompt_formatter import PromptRenderer
+from ankify.settings import AWSProviderAccess, AzureProviderAccess, NoteType, ProviderAccessSettings, Text2SpeechSettings
+from ankify.tsv import read_from_string
+from ankify.tts.tts_manager import TTSManager
+from ankify.vocab_entry import VocabEntry
+from ankify.logging import get_logger
 
 
 logger = get_logger(__name__)
