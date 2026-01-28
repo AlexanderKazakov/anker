@@ -286,8 +286,8 @@ Hello World!\tHallo Welt!\tEng\tGe
     logger.info("Ankify Test Deck: %s", uri)
 
 
-if __name__ == "__main__":
-    # _test_vocab()
-    # _test_convert_TSV_to_Anki_deck()
-    mcp.run(transport="stdio")
+# if __name__ == "__main__":
+#     # _test_vocab()
+#     # _test_convert_TSV_to_Anki_deck()
+#     mcp.run(transport="stdio")
 
