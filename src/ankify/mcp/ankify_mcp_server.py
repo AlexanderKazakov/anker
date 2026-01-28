@@ -25,7 +25,7 @@ logger = fastmcp.utilities.logging.get_logger(__name__)
 mcp = fastmcp.FastMCP(
     name="Ankify",
     instructions="Create Anki decks with TTS speech from arbitrary input",
-    website_url="https://github.com/AlexanderKazakov/ankify",
+    # website_url="https://github.com/AlexanderKazakov/ankify",
 )
 
 load_dotenv()
