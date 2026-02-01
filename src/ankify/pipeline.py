@@ -142,7 +142,7 @@ class Pipeline:
         ):
             return
         
-        new_file_name = datetime.now().strftime("%Y.%m.%d_%H:%M:%S")
+        new_file_name = datetime.now().strftime("%Y.%m.%d_%H-%M-%S")
         shutil.copy(Path(self.settings.text_input), Path(few_shot_dir) / f"{new_file_name}.txt")
         shutil.copy(Path(self.settings.table_output), Path(few_shot_dir) / f"{new_file_name}.tsv")
         self.logger.info("Added the results to few-shot examples as %s.txt and %s.tsv", new_file_name, new_file_name)
