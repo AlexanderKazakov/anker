@@ -1,6 +1,9 @@
+.env
 /.venv
+infra/cdk/.venv
+infra/cdk/cdk.out
+infra/cdk/cdk.json
 __pycache__
 /.pytest_cache
 /uv.lock
-.env
 /tmp

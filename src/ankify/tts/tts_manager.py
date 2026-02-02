@@ -30,7 +30,7 @@ def create_tts_single_language_client(
         except ImportError as e:
             raise ImportError(
                 "AWS TTS provider requires 'boto3'. "
-                "Install with: pip install ankify[tts-aws]"
+                "Install ankify with the 'tts-aws' extra"
             ) from e
         return (
             AWSPollySingleLanguageClient(
@@ -45,7 +45,7 @@ def create_tts_single_language_client(
         except ImportError as e:
             raise ImportError(
                 "Azure TTS provider requires 'azure-cognitiveservices-speech'. "
-                "Install with: pip install ankify[tts-azure]"
+                "Install ankify with the 'tts-azure' extra"
             ) from e
         return (
             AzureTTSSingleLanguageClient(
@@ -60,7 +60,7 @@ def create_tts_single_language_client(
         except ImportError as e:
             raise ImportError(
                 "Edge TTS provider requires 'edge-tts'. "
-                "Install with: pip install ankify[tts-edge]"
+                "Install ankify with the 'tts-edge' extra"
             ) from e
         return (
             EdgeTTSSingleLanguageClient(

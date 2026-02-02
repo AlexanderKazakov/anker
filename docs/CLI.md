@@ -15,15 +15,14 @@ The CLI takes arbitrary text (a book fragment, a foreign language lesson chat ex
 ## Installation
 
 ```bash
-pip install ankify[local-all]
-```
-
-Or for development:
-
-```bash
 git clone https://github.com/AlexanderKazakov/ankify.git
 cd ankify
 uv venv --python 3.12
+# For CLI with free Edge TTS (just works, no TTS API keys required)
+uv pip install -e .[local-cli]
+# For CLI with all TTS providers (Azure, AWS Polly, Edge TTS)
+uv pip install -e .[local-all]
+# For development
 uv pip install -e .[local-all,dev]
 ```
 

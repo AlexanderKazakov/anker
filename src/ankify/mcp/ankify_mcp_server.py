@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import re
+import sys
 import fastmcp
 
 from importlib import resources
@@ -12,6 +13,8 @@ from typing import Any
 from pydantic import Field
 from pydantic.fields import FieldInfo
 from dotenv import load_dotenv
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 from ankify.anki.anki_deck_creator import AnkiDeckCreator
 from ankify.llm.jinja2_prompt_formatter import PromptRenderer
@@ -38,16 +41,76 @@ mcp = fastmcp.FastMCP(
 
 load_dotenv()
 
-decks_directory = Path("~/ankify").expanduser().resolve()
+if os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+    # Lambda: only /tmp is writable
+    decks_directory = Path("/tmp/ankify")
+else:
+    # Local development
+    decks_directory = Path("~/ankify").expanduser().resolve()
 decks_directory.mkdir(parents=True, exist_ok=True)
 
-if os.getenv("ANKIFY__PROVIDERS__AZURE__SUBSCRIPTION_KEY"):
+
+def _upload_to_s3_if_lambda(local_path: Path) -> str:
+    """Upload file to S3 if running in Lambda, otherwise return local file URI."""
+    bucket = os.environ.get("ANKIFY_S3_BUCKET")
+    if not bucket:
+        return local_path.resolve().as_uri()
+
+    import boto3
+
+    region_name = os.environ.get("AWS_REGION", "eu-central-1")
+    s3_client = boto3.client(
+        "s3",
+        # Important for presigned URLs to work 
+        # https://repost.aws/questions/QUbQp5wlMXTMOEdu8SZWzC7w/s3-presigned-url-doesn-t-work-from-newly-created-buckets
+        region_name=region_name,
+        endpoint_url=f"https://s3.{region_name}.amazonaws.com",
+    )
+    s3_key = f"decks/{local_path.name}"
+
+    s3_client.upload_file(
+        str(local_path),
+        bucket,
+        s3_key,
+        ExtraArgs={"ContentType": "application/octet-stream"},
+    )
+
+    expiry = int(os.environ.get("ANKIFY_PRESIGNED_URL_EXPIRY", "86400"))
+    presigned_url = s3_client.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": bucket, "Key": s3_key},
+        ExpiresIn=expiry,
+    )
+
+    logger.info("Uploaded deck to S3: %s", presigned_url)
+
+    # Clean up local file after successful upload
+    local_path.unlink(missing_ok=True)
+
+    return presigned_url
+
+
+def _get_azure_subscription_key() -> str | None:
+    """Get Azure subscription key from Secrets Manager or environment variable."""
+    # First check for Secrets Manager ARN (Lambda deployment)
+    secret_arn = os.environ.get("ANKIFY_AZURE_SECRET_ARN")
+    if secret_arn:
+        import boto3
+        client = boto3.client("secretsmanager")
+        response = client.get_secret_value(SecretId=secret_arn)
+        return response["SecretString"]
+    # Fall back to direct environment variable (local development)
+    return os.getenv("ANKIFY__PROVIDERS__AZURE__SUBSCRIPTION_KEY")
+
+
+azure_subscription_key = _get_azure_subscription_key()
+if azure_subscription_key:
     tts_settings = Text2SpeechSettings(
         default_provider="azure",
     )
     provider_settings = ProviderAccessSettings(
         azure=AzureProviderAccess(
-            subscription_key=os.getenv("ANKIFY__PROVIDERS__AZURE__SUBSCRIPTION_KEY"),
+            subscription_key=azure_subscription_key,
             region=os.getenv("ANKIFY__PROVIDERS__AZURE__REGION"),
         ),
     )
@@ -242,6 +305,12 @@ def vocab_ge_en_fb() -> str:
     return _vocab_prompt(language_a="German", language_b="English", note_type="forward_and_backward")
 
 
+@mcp.custom_route("/health", methods=["GET"])
+async def health_check(request: Request):
+    """Health check endpoint for Lambda Web Adapter."""
+    return JSONResponse({"status": "healthy"})
+
+
 @mcp.tool()
 def convert_TSV_to_Anki_deck(
     tsv_vocabulary: str = Field(description="String with vocabulary table in TSV format"),
@@ -281,8 +350,8 @@ def convert_TSV_to_Anki_deck(
     with TemporaryDirectory(dir=decks_directory, prefix="media_") as audio_dir:
         synthesize_audio(vocab_entries, Path(audio_dir))
         output_file = package_anki_deck(vocab_entries, decks_directory, deck_name, note_type)
-        
-    return output_file.resolve().as_uri()
+
+    return _upload_to_s3_if_lambda(output_file)
 
 
 def synthesize_audio(vocab_entries: list[VocabEntry], audio_dir: Path) -> None:
@@ -354,5 +423,13 @@ if __name__ == "__main__":
     # import asyncio
     # asyncio.run(_test_all())
 
+    # Local (stdio) MCP mode
     mcp.run(transport="stdio")
+    sys.exit(0)
+
+
+# ASGI app for uvicorn (used in Docker with Lambda Web Adapter)
+app = mcp.http_app(
+    stateless_http=True,
+)
 

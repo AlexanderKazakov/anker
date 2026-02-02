@@ -28,7 +28,15 @@ For local MCP server with free Edge TTS:
 uv pip install -e .[local-mcp]
 ```
 
-### Full Local (CLI + All TTS)
+### Local CLI Application (minimal installation)
+
+For local CLI application with free Edge TTS:
+
+```bash
+uv pip install -e .[local-cli]
+```
+
+### Full Local (CLI + MCP + All TTS)
 
 For all the features including CLI and all TTS providers:
 
@@ -36,13 +44,9 @@ For all the features including CLI and all TTS providers:
 uv pip install -e .[local-all]
 ```
 
-### FastMCP Cloud
+### AWS Lambda Deployment
 
-You need this only when deploying to FastMCP Cloud. This is the default installation option just because that's how it works with FastMCP Cloud. So most probably you don't need it.
-
-```bash
-uv pip install -e .
-```
+See [infra/README.md](infra/README.md) for deployment instructions.
 
 ### Development
 
@@ -52,11 +56,7 @@ uv pip install -e .[local-all,dev]
 
 ## MCP Server
 
-Ankify provides an MCP server for integration with LLM clients
-
-### Cloud Deployment (FastMCP)
-
-Deploy to FastMCP Cloud for hosted MCP access. The server uses Azure TTS by default.
+Ankify provides an MCP server for integration with LLM clients.
 
 ### Local MCP Server
 
@@ -79,6 +79,10 @@ Add to your MCP client (Claude Desktop, Cursor, etc.) configuration:
   }
 }
 ```
+
+### AWS Deployment
+
+Deploy to AWS Lambda for hosted MCP access. See [infra/README.md](infra/README.md) for instructions.
 
 ### MCP Tools & Prompts
 

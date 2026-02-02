@@ -96,7 +96,6 @@ class EdgeTTSSingleLanguageClient(TTSSingleLanguageClient):
         return self._run_coroutine(lambda: self._synthesize_single_async(prepared_text))
 
     async def _synthesize_single_async(self, text: str) -> bytes:
-        # Lazy import to avoid asyncio conflicts at module load time in FastMCP cloud
         import edge_tts
         
         self.logger.debug(

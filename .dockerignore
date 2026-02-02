@@ -1,0 +1,29 @@
+# CDK build artifacts
+**/cdk.out
+
+# Virtual environments
+.venv
+**/.venv
+
+# Git
+.git
+
+# Python cache
+__pycache__
+**/__pycache__
+*.pyc
+
+# IDE
+.vscode
+.cursor
+.claude
+
+# Test/dev artifacts
+.pytest_cache
+tmp
+tests
+docs
+
+# Environment files
+.env
+.env.example

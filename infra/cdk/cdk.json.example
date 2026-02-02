@@ -1,0 +1,8 @@
+{
+  "app": "python3.12 app.py",
+  "context": {
+    "account": "YOUR_AWS_ACCOUNT_ID",
+    "region": "eu-central-1",
+    "azure_region": "westeurope"
+  }
+}
