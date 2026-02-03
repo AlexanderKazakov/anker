@@ -24,13 +24,65 @@ from ankify.tts.tts_manager import TTSManager
 from ankify.vocab_entry import VocabEntry
 
 
+# =============================================================================
+# TEMPORARY PATCH: enable_rich_logging support (from fastmcp PR #2893)
+# https://github.com/jlowin/fastmcp/commit/81cbb9bee280f58ce45e98871bea8f083ff08049
+# Remove this once fastmcp releases this feature in stable
+# =============================================================================
+def _configure_logging_patched(
+    level: str | int = "INFO",
+    logger: logging.Logger | None = None,
+    enable_rich_logging: bool = True,
+) -> None:
+    """
+    Patched configure_logging that supports enable_rich_logging flag.
+    When enable_rich_logging=False, uses standard Python logging without rich formatting.
+    """
+    if logger is None:
+        logger = logging.getLogger("fastmcp")
+
+    logger.propagate = False
+    logger.setLevel(level)
+
+    # Remove any existing handlers to avoid duplicates on reconfiguration
+    for hdlr in logger.handlers[:]:
+        logger.removeHandler(hdlr)
+
+    # Use standard logging handlers if rich logging is disabled
+    if not enable_rich_logging:
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
+        logger.addHandler(handler)
+        return
+
+    # Otherwise, use the original fastmcp configure_logging for rich output
+    fastmcp.utilities.logging.configure_logging(level=level, logger=logger)
+# =============================================================================
+
+
+# Control rich logging via environment variable (default: enabled)
+ENABLE_RICH_LOGGING = os.environ.get("FASTMCP_ENABLE_RICH_LOGGING", "true").lower() in ("true", "1", "yes")
+
 logger = fastmcp.utilities.logging.get_logger(__name__)
 
 # Configure the 'ankify' logger to use FastMCP's logging infrastructure
 # so that logs from imported modules (tts_manager, anki_deck_creator, etc.) are visible
-fastmcp.utilities.logging.configure_logging(
+# fastmcp.utilities.logging.configure_logging(
+#     level="INFO",
+#     logger=logging.getLogger("ankify"),
+# )
+
+_configure_logging_patched(
     level="INFO",
     logger=logging.getLogger("ankify"),
+    enable_rich_logging=ENABLE_RICH_LOGGING,
+)
+
+# Also apply to the main fastmcp logger
+_configure_logging_patched(
+    level="INFO",
+    logger=logging.getLogger("fastmcp"),
+    enable_rich_logging=ENABLE_RICH_LOGGING,
 )
 
 mcp = fastmcp.FastMCP(
