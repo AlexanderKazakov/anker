@@ -26,7 +26,6 @@ This folder contains AWS CDK infrastructure code to deploy the Ankify MCP Server
 
    ```bash
    aws configure
-   # or use environment variables: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
    ```
 2. **Node.js 18+** (required for CDK CLI)
 
@@ -122,13 +121,7 @@ aws secretsmanager delete-secret --secret-id "ankify/azure-tts"
 # Add --force-delete-without-recovery to skip the 7-day recovery window
 ```
 
-**Deploy with custom Azure region:**
-
-```bash
-cdk deploy -c azure_region=westeurope
-```
-
-### View changes before deploying
+View changes before deploying
 
 ```bash
 cdk diff

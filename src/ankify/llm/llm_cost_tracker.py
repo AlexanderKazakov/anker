@@ -451,9 +451,9 @@ if __name__ == "__main__":
 
     load_dotenv()
 
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("ANKIFY__PROVIDERS__OPENAI__API_KEY")
 
-    base_url = os.getenv("OPENAI_BASE_URL") or None
+    base_url = os.getenv("ANKIFY__PROVIDERS__OPENAI__BASE_URL") or None
     model = "gpt-5-nano"
     # model = "claude-4.5-haiku"
     client = OpenAI(api_key=api_key, base_url=base_url)

@@ -101,7 +101,7 @@ class AWSProviderAccess(StrictModel):
     )
     region: str | None = Field(
         default=None,
-        description="AWS region (e.g., us-east-1) for the TTS service.",
+        description="AWS region (e.g., eu-central-1) for the TTS service.",
     )
 
 
