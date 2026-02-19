@@ -21,7 +21,7 @@ class AnkiDeckCreator:
         if not vocab:
             self.logger.info("Empty vocabulary; skipping Anki deck creation")
             return
-        
+
         self.logger.info("Creating Anki deck with %d notes", len(vocab))
 
         output_path = Path(self.output_file)
@@ -38,11 +38,9 @@ class AnkiDeckCreator:
         package = genanki.Package(deck)
         package.media_files = list(media_files)
 
-        self.logger.debug(
-            "Deck created. Writing it to %s", str(output_path.resolve())
-        )
+        self.logger.debug("Deck created. Writing it to %s", str(output_path.resolve()))
         package.write_to_file(str(output_path))
-    
+
     def _create_anki_note(self, entry: VocabEntry) -> genanki.Note:
         note = genanki.Note(
             model=self.anki_note_model,
@@ -61,7 +59,11 @@ class AnkiDeckCreator:
     def _create_anki_note_model(self, note_type: NoteType) -> genanki.Model:
         def _load(package: str, filename: str) -> str:
             try:
-                return resources.files(package).joinpath(filename).read_text(encoding="utf-8")
+                return (
+                    resources.files(package)
+                    .joinpath(filename)
+                    .read_text(encoding="utf-8")
+                )
             except Exception as exc:
                 self.logger.error(
                     "Failed to load resource '%s' from package '%s'", filename, package
@@ -69,7 +71,7 @@ class AnkiDeckCreator:
                 raise FileNotFoundError(
                     f"Resource not found: {package}/{filename}"
                 ) from exc
-        
+
         self.logger.info("Loading Anki note model from templates")
 
         css = _load("ankify.anki.templates", "styles.css")
@@ -120,27 +122,35 @@ class AnkiDeckCreator:
             templates=templates,
             css=css,
         )
-        self.logger.debug("Created Anki note model '%s' with id '%d'", model_name, model.model_id)
+        self.logger.debug(
+            "Created Anki note model '%s' with id '%d'", model_name, model.model_id
+        )
         return model
-    
+
     def _fix_genanki_sort_type(self) -> None:
         # Ensure the cards default sort key is Date Added, not first or any other field.
         # Necessary to prevent disruption of the default normal sorting order in the Anki browser.
         try:
             import genanki.apkg_col as _apkg_col
-            _apkg_col.APKG_COL = _apkg_col.APKG_COL.replace('"sortType": "noteFld"', '"sortType": "noteCrt"')
+
+            _apkg_col.APKG_COL = _apkg_col.APKG_COL.replace(
+                '"sortType": "noteFld"', '"sortType": "noteCrt"'
+            )
             if _apkg_col.APKG_COL.find('"sortType": "noteCrt"') == -1:
                 raise RuntimeError("Failed to patch the sortType in genanki")
         except Exception as exc:
             self.logger.error(
                 "Failed to adjust sortType in genanki, "
                 "the normal sorting order in the Anki browser may be disrupted after loading the deck. "
-                "Error: %s", exc, exc_info=True
+                "Error: %s",
+                exc,
+                exc_info=True,
             )
 
 
 class AnkiGuidGenerator:
     # Anki-style base91 alphabet used by genanki and Anki for GUIDs
+    # fmt: off
     _ANKI_BASE91_TABLE = [
         'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
         't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
@@ -148,6 +158,7 @@ class AnkiGuidGenerator:
         '5', '6', '7', '8', '9', '!', '#', '$', '%', '&', '(', ')', '*', '+', ',', '-', '.', '/', ':',
         ';', '<', '=', '>', '?', '@', '[', ']', '^', '_', '`', '{', '|', '}', '~'
     ]
+    # fmt: on
 
     @staticmethod
     def random_int_guid() -> int:
@@ -166,7 +177,7 @@ class AnkiGuidGenerator:
     def hash_based_int_guid(data: str) -> int:
         # hash(data) -> truncate to signed 64-bit integer range
         m = hashlib.sha256()
-        m.update(data.encode('utf-8'))
+        m.update(data.encode("utf-8"))
         hash_bytes = m.digest()[:8]
         value = 0
         for b in hash_bytes:
@@ -181,7 +192,9 @@ class AnkiGuidGenerator:
     @staticmethod
     def hash_based_base91_guid(data: str) -> str:
         # hash_based_int_guid() -> encode with Anki/base91 alphabet
-        return AnkiGuidGenerator._encode_base91(AnkiGuidGenerator.hash_based_int_guid(data))
+        return AnkiGuidGenerator._encode_base91(
+            AnkiGuidGenerator.hash_based_int_guid(data)
+        )
 
     @staticmethod
     def _encode_base91(value: int) -> str:
@@ -195,4 +208,4 @@ class AnkiGuidGenerator:
             value, rem = divmod(value, base)
             chars.append(table[rem])
         chars.reverse()
-        return ''.join(chars)
+        return "".join(chars)

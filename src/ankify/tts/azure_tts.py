@@ -1,5 +1,10 @@
 import azure.cognitiveservices.speech as speechsdk
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+)
 from xml.sax.saxutils import escape as xml_escape
 
 from ..logging import get_logger
@@ -17,13 +22,15 @@ class AzureTTSSingleLanguageClient(TTSSingleLanguageClient):
     ]
 
     @staticmethod
-    def possibly_preprocess_text_into_ssml(text: str, voice_id: str) -> tuple[str, bool]:
+    def possibly_preprocess_text_into_ssml(
+        text: str, voice_id: str
+    ) -> tuple[str, bool]:
         """
         Semicolons are replaced with strong breaks, slashes are replaced with medium breaks.
         Everything else is left as is, since it works fine as plain text.
         If there are no characters that need to be replaced, the text is returned as is.
         If there are characters that need to be replaced, the text is returned as SSML, XML-escaped.
-        
+
         Returns a tuple of (text, is_ssml).
         """
         if not any(c in text for c, _, _ in AzureTTSSingleLanguageClient.ssml_mapping):
@@ -41,7 +48,9 @@ class AzureTTSSingleLanguageClient(TTSSingleLanguageClient):
         ssml = f'<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US"><voice name="{voice_id}">{text}</voice></speak>'
         return ssml, True
 
-    def __init__(self, access_settings: AzureProviderAccess, language_settings: TTSVoiceOptions):
+    def __init__(
+        self, access_settings: AzureProviderAccess, language_settings: TTSVoiceOptions
+    ):
         self.logger = get_logger("ankify.tts.azure")
         self.logger.debug(
             "Initializing Azure TTS client for voice id '%s'",
@@ -81,7 +90,9 @@ class AzureTTSSingleLanguageClient(TTSSingleLanguageClient):
         wait=wait_exponential(),
         retry=retry_if_exception_type((RuntimeError,)),
     )
-    def _synthesize_single(self, text: str, language: str, cost_tracker: TTSCostTracker | None) -> bytes:
+    def _synthesize_single(
+        self, text: str, language: str, cost_tracker: TTSCostTracker | None
+    ) -> bytes:
         voice_id = self._language_settings.voice_id
         prepared_text, is_ssml = self.possibly_preprocess_text_into_ssml(text, voice_id)
 
@@ -96,7 +107,9 @@ class AzureTTSSingleLanguageClient(TTSSingleLanguageClient):
 
         self.logger.debug(
             "Calling Azure TTS: voice=%s is_ssml=%s text=%s",
-            voice_id, is_ssml, text[:50] + "..." if len(text) > 50 else text,
+            voice_id,
+            is_ssml,
+            text[:50] + "..." if len(text) > 50 else text,
         )
 
         if is_ssml:

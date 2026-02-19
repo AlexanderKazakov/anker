@@ -56,6 +56,3 @@ def setup_logging(
                 return record.levelno >= logging.WARNING
 
         handler.addFilter(_OnlyAppOrThirdPartyWarnings())
-
-
-

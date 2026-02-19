@@ -4,7 +4,12 @@ from typing import Awaitable, Callable, TYPE_CHECKING
 from xml.sax.saxutils import escape as xml_escape
 
 import aiohttp
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+)
 
 from ..logging import get_logger
 from ..settings import TTSVoiceOptions
@@ -97,7 +102,7 @@ class EdgeTTSSingleLanguageClient(TTSSingleLanguageClient):
 
     async def _synthesize_single_async(self, text: str) -> bytes:
         import edge_tts
-        
+
         self.logger.debug(
             "Calling Edge TTS: voice=%s text=%s", self._language_settings.voice_id, text
         )

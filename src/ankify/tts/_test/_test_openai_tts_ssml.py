@@ -107,7 +107,9 @@ def _synthesize_to_file(
 def main() -> None:
     # Load OpenAI access from YAML config used for dev testing
     settings = Settings(config=Path("./settings/dev_test.yaml").resolve())
-    client = _build_openai_client(settings.providers.openai if settings.providers else None)
+    client = _build_openai_client(
+        settings.providers.openai if settings.providers else None
+    )
 
     # Where to save results
     out_dir = Path("./tmp/tts_ssml").resolve()
@@ -119,7 +121,9 @@ def main() -> None:
     voice_name = "alloy"
 
     for lang_key, samples in _iter_languages(settings):
-        logger.info("Testing language=%s model=%s voice=%s", lang_key, model_name, voice_name)
+        logger.info(
+            "Testing language=%s model=%s voice=%s", lang_key, model_name, voice_name
+        )
         suffix = {"english": "en", "german": "de", "russian": "ru"}[lang_key]
         instruction = {
             "english": "Say this in English:",
@@ -146,5 +150,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-

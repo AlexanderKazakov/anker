@@ -36,7 +36,7 @@ local-cli = ["ankify[cli,tts-edge]"]
 # Full local: CLI application + Local MCP + all TTS providers
 local-all = ["ankify[cli,tts-aws,tts-edge,tts-azure]"]
 # Development tools
-dev = ["pytest", "ruff", "mypy"]
+dev = ["pytest", "pytest-asyncio", "pytest-mock", "ruff"]
 # LLM evaluation tools
 eval = ["mlflow"]
 
@@ -50,8 +50,15 @@ build-backend = "hatchling.build"
 [tool.ruff]
 line-length = 88
 
-[tool.mypy]
-strict = true
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.pytest_asyncio]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/ankify"]

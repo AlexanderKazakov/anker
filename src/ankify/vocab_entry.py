@@ -10,8 +10,3 @@ class VocabEntry:
     back_language: str
     front_audio: Path | None = None
     back_audio: Path | None = None
-
-
-
-
-

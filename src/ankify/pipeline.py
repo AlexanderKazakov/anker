@@ -26,7 +26,7 @@ class Pipeline:
 
         self.prompt = PromptBuilder(settings).build()
         self.logger.debug("Loaded LLM instructions:\n%s", self.prompt)
-        
+
         self.llm = create_llm_client(settings)
         self.tts = TTSManager(
             tts_settings=settings.tts,
@@ -46,20 +46,24 @@ class Pipeline:
         vocab = self._load_or_generate_vocabulary()
 
         if not self.settings.anki_output:
-            self.logger.info("No anki_output specified; skipping TTS and Anki packaging")
+            self.logger.info(
+                "No anki_output specified; skipping TTS and Anki packaging"
+            )
             return
-        
+
         with TemporaryDirectory(prefix="ankify_media_") as audio_dir:
             self.tts.synthesize(vocab, Path(audio_dir))
             self._build_anki_deck(vocab)
 
         self._ask_and_save_result_to_few_shot_examples()
-    
-    def _confirm_step(self, prompt: str, *, default_yes: bool, ask_yes_no: bool = True) -> bool:
-        """ Ask the user to confirm an action via stdin/stdout """
+
+    def _confirm_step(
+        self, prompt: str, *, default_yes: bool, ask_yes_no: bool = True
+    ) -> bool:
+        """Ask the user to confirm an action via stdin/stdout"""
         if not self.settings.confirm_steps:
             return default_yes
-        
+
         try:
             if ask_yes_no:
                 return bool(Confirm.ask(f"[bold]{prompt}[/bold]", default=default_yes))
@@ -68,7 +72,7 @@ class Pipeline:
             return True
         except EOFError:
             return default_yes
-    
+
     def _load_or_generate_vocabulary(self) -> list[VocabEntry]:
         # Use existing TSV if present and confirmed
         if self.settings.table_output and Path(self.settings.table_output).is_file():
@@ -77,13 +81,17 @@ class Pipeline:
                 default_yes=True,
             ):
                 vocab = read_from_file(Path(self.settings.table_output))
-                self.logger.info("Using existing TSV table with %d vocabulary entries", len(vocab))
+                self.logger.info(
+                    "Using existing TSV table with %d vocabulary entries", len(vocab)
+                )
                 return vocab
 
         # Otherwise, generate from text
         input_text = self._read_input_text()
-        
-        vocab = self.llm.generate_vocabulary(instructions=self.prompt, input_text=input_text)
+
+        vocab = self.llm.generate_vocabulary(
+            instructions=self.prompt, input_text=input_text
+        )
 
         # Handle the TSV writing and reading after manual edits
         if not self.settings.table_output:
@@ -91,7 +99,10 @@ class Pipeline:
             return vocab
 
         write_to_file(vocab, Path(self.settings.table_output))
-        self.logger.info("Wrote TSV vocabulary table to %s", Path(self.settings.table_output).resolve().as_uri())
+        self.logger.info(
+            "Wrote TSV vocabulary table to %s",
+            Path(self.settings.table_output).resolve().as_uri(),
+        )
 
         if not self.settings.confirm_steps:
             return vocab
@@ -111,7 +122,9 @@ class Pipeline:
             self.logger.info("Reading input text from %s", path)
             return path.read_text(encoding="utf-8")
         self.logger.info("Reading input text from stdin")
-        self.console.print("[bold]Reading input text from stdin[/bold] [dim](end with Ctrl-D)[/dim]")
+        self.console.print(
+            "[bold]Reading input text from stdin[/bold] [dim](end with Ctrl-D)[/dim]"
+        )
         return sys.stdin.read()
 
     def _build_anki_deck(self, vocab: list[VocabEntry]) -> None:
@@ -123,27 +136,40 @@ class Pipeline:
             ):
                 output_file.unlink()
             else:
-                self.logger.info("Skipping Anki deck generation, the existing deck file is kept")
+                self.logger.info(
+                    "Skipping Anki deck generation, the existing deck file is kept"
+                )
                 return
 
         self.anki_packager.write_anki_deck(vocab)
         self.logger.info("Wrote Anki deck to %s", output_file.resolve())
-    
+
     def _ask_and_save_result_to_few_shot_examples(self) -> None:
         few_shot_dir = self.settings.llm.options.few_shot_examples
         if not (
-            self.settings.table_output and Path(self.settings.table_output).is_file() and
-            self.settings.text_input and Path(self.settings.text_input).is_file() and
-            few_shot_dir and Path(few_shot_dir).is_dir() and
-            self._confirm_step(
+            self.settings.table_output
+            and Path(self.settings.table_output).is_file()
+            and self.settings.text_input
+            and Path(self.settings.text_input).is_file()
+            and few_shot_dir
+            and Path(few_shot_dir).is_dir()
+            and self._confirm_step(
                 f"Add the result of the current run to few-shot examples at {few_shot_dir}?",
                 default_yes=False,
             )
         ):
             return
-        
-        new_file_name = datetime.now().strftime("%Y.%m.%d_%H-%M-%S")
-        shutil.copy(Path(self.settings.text_input), Path(few_shot_dir) / f"{new_file_name}.txt")
-        shutil.copy(Path(self.settings.table_output), Path(few_shot_dir) / f"{new_file_name}.tsv")
-        self.logger.info("Added the results to few-shot examples as %s.txt and %s.tsv", new_file_name, new_file_name)
 
+        new_file_name = datetime.now().strftime("%Y.%m.%d_%H-%M-%S")
+        shutil.copy(
+            Path(self.settings.text_input), Path(few_shot_dir) / f"{new_file_name}.txt"
+        )
+        shutil.copy(
+            Path(self.settings.table_output),
+            Path(few_shot_dir) / f"{new_file_name}.tsv",
+        )
+        self.logger.info(
+            "Added the results to few-shot examples as %s.txt and %s.tsv",
+            new_file_name,
+            new_file_name,
+        )

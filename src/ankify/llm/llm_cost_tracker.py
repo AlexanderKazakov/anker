@@ -12,7 +12,13 @@ from io import StringIO
 
 from rich.console import Console
 from rich.table import Table
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential, before_sleep_log
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+    before_sleep_log,
+)
 from openai.types.completion_usage import CompletionUsage
 from openai.types.responses.response_usage import ResponseUsage
 
@@ -26,12 +32,16 @@ class LLMPricing:
     uncached_input: Decimal = Decimal(0)
     reasoning: Decimal = Decimal(0)
     output: Decimal = Decimal(0)
-    
+
     @property
     def is_valid(self) -> bool:
         return (
-            self.cached_input > 0 and self.uncached_input > 0 and self.reasoning > 0 and self.output > 0 and
-            self.cached_input <= self.uncached_input and self.reasoning <= self.output
+            self.cached_input > 0
+            and self.uncached_input > 0
+            and self.reasoning > 0
+            and self.output > 0
+            and self.cached_input <= self.uncached_input
+            and self.reasoning <= self.output
         )
 
 
@@ -42,16 +52,22 @@ class LLMTokenUsage:
     reasoning: int = 0
     output: int = 0
     total: int = 0
-    
+
     @property
     def is_valid(self) -> bool:
         return (
-            self.cached_input + self.uncached_input + self.reasoning + self.output == self.total and
-            self.cached_input >= 0 and self.uncached_input >= 0 and self.reasoning >= 0 and self.output >= 0
+            self.cached_input + self.uncached_input + self.reasoning + self.output
+            == self.total
+            and self.cached_input >= 0
+            and self.uncached_input >= 0
+            and self.reasoning >= 0
+            and self.output >= 0
         )
-    
+
     @classmethod
-    def from_openai_usage(cls, usage: CompletionUsage | ResponseUsage) -> "LLMTokenUsage":
+    def from_openai_usage(
+        cls, usage: CompletionUsage | ResponseUsage
+    ) -> "LLMTokenUsage":
         try:
             if isinstance(usage, CompletionUsage):
                 return cls._from_openai_completion_usage(usage)
@@ -62,7 +78,7 @@ class LLMTokenUsage:
         except Exception as e:
             _logger.warning("Failed to parse token usage: %s", e)
             return cls(0, 0, 0, 0, 0)
-    
+
     @classmethod
     def _from_openai_completion_usage(cls, usage: CompletionUsage) -> "LLMTokenUsage":
         cached = 0
@@ -76,12 +92,14 @@ class LLMTokenUsage:
             uncached_input=usage.prompt_tokens - cached,
             reasoning=reasoning,
             output=usage.completion_tokens - reasoning,
-            total=usage.total_tokens
+            total=usage.total_tokens,
         )
         if not res.is_valid:
-            _logger.warning("Token usage is not valid: %s, openai.CompletionUsage: %s", res, usage)
+            _logger.warning(
+                "Token usage is not valid: %s, openai.CompletionUsage: %s", res, usage
+            )
         return res
-    
+
     @classmethod
     def _from_openai_response_usage(cls, usage: ResponseUsage) -> "LLMTokenUsage":
         cached = 0
@@ -98,18 +116,20 @@ class LLMTokenUsage:
             total=usage.total_tokens,
         )
         if not res.is_valid:
-            _logger.warning("Token usage is not valid: %s, openai.ResponseUsage: %s", res, usage)
+            _logger.warning(
+                "Token usage is not valid: %s, openai.ResponseUsage: %s", res, usage
+            )
         return res
-        
+
     def __add__(self, other: "LLMTokenUsage") -> "LLMTokenUsage":
         return self.__class__(
             cached_input=self.cached_input + other.cached_input,
             uncached_input=self.uncached_input + other.uncached_input,
             reasoning=self.reasoning + other.reasoning,
             output=self.output + other.output,
-            total=self.total + other.total
+            total=self.total + other.total,
         )
-    
+
     def __radd__(self, other: int) -> "LLMTokenUsage":
         return self if other == 0 else NotImplemented
 
@@ -121,14 +141,18 @@ class LLMCost:
     reasoning: Decimal = Decimal(0)
     output: Decimal = Decimal(0)
     total: Decimal = Decimal(0)
-    
+
     @property
     def is_valid(self) -> bool:
         return (
-            self.total == self.cached_input + self.uncached_input + self.reasoning + self.output and
-            self.cached_input >= 0 and self.uncached_input >= 0 and self.reasoning >= 0 and self.output >= 0
+            self.total
+            == self.cached_input + self.uncached_input + self.reasoning + self.output
+            and self.cached_input >= 0
+            and self.uncached_input >= 0
+            and self.reasoning >= 0
+            and self.output >= 0
         )
-    
+
     @classmethod
     def calculate(cls, token_usage: LLMTokenUsage, pricing: LLMPricing) -> "LLMCost":
         cached_input = token_usage.cached_input * pricing.cached_input
@@ -140,21 +164,21 @@ class LLMCost:
             uncached_input=uncached_input,
             reasoning=reasoning,
             output=output,
-            total=cached_input + uncached_input + reasoning + output
+            total=cached_input + uncached_input + reasoning + output,
         )
         if not res.is_valid:
             _logger.warning("Cost is not valid: %s", res)
         return res
-    
+
     def __add__(self, other: "LLMCost") -> "LLMCost":
         return self.__class__(
             cached_input=self.cached_input + other.cached_input,
             uncached_input=self.uncached_input + other.uncached_input,
             reasoning=self.reasoning + other.reasoning,
             output=self.output + other.output,
-            total=self.total + other.total
+            total=self.total + other.total,
         )
-    
+
     def __radd__(self, other: int) -> "LLMCost":
         return self if other == 0 else NotImplemented
 
@@ -164,6 +188,7 @@ class LLMPricingLoader:
     Download and cache pricing data for LLM models.
     Singleton to avoid re-loading from disk.
     """
+
     _instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -172,12 +197,12 @@ class LLMPricingLoader:
         return cls._instance
 
     def __init__(
-            self, 
-            *,
-            cache_dir: Path | None = None,
-            cache_duration: timedelta = timedelta(hours=24),
-            source_url: str = "https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json"
-        ):
+        self,
+        *,
+        cache_dir: Path | None = None,
+        cache_duration: timedelta = timedelta(hours=24),
+        source_url: str = "https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json",
+    ):
         """
         cache_dir: The directory to cache the pricing data, default is ~/.cache/llm_cost_tracker
         cache_duration: Pricing data cache invalidation duration
@@ -201,51 +226,68 @@ class LLMPricingLoader:
         data = self._get_data()
         model_data = self._resolve_model_pricing(data, model)
         if model_data is None:
-            _logger.warning("Model %s not found in pricing data, return all zeros", model)
+            _logger.warning(
+                "Model %s not found in pricing data, return all zeros", model
+            )
             self._loaded_models_pricing[model] = LLMPricing()
             return self._loaded_models_pricing[model]
-        
+
         pricing = LLMPricing()
-        
+
         if "input_cost_per_token" in model_data:
             pricing.uncached_input = Decimal(model_data["input_cost_per_token"])
         else:
-            _logger.warning("No input token cost found for model %s, return all zeros", model)
+            _logger.warning(
+                "No input token cost found for model %s, return all zeros", model
+            )
             self._loaded_models_pricing[model] = LLMPricing()
             return self._loaded_models_pricing[model]
-        
+
         if "cache_read_input_token_cost" in model_data:
             pricing.cached_input = Decimal(model_data["cache_read_input_token_cost"])
         else:
-            _logger.info("No cached input token cost found for model %s, set it to the input token cost", model)
+            _logger.info(
+                "No cached input token cost found for model %s, set it to the input token cost",
+                model,
+            )
             pricing.cached_input = pricing.uncached_input
-        
+
         if "output_cost_per_token" in model_data:
             pricing.output = Decimal(model_data["output_cost_per_token"])
         else:
-            _logger.warning("No output token cost found for model %s, return all zeros", model)
+            _logger.warning(
+                "No output token cost found for model %s, return all zeros", model
+            )
             self._loaded_models_pricing[model] = LLMPricing()
             return self._loaded_models_pricing[model]
-        
+
         pricing.reasoning = pricing.output
-        
+
         if not pricing.is_valid:
-            _logger.warning("Pricing data for model %s is not valid: %s", model, pricing)
-        
+            _logger.warning(
+                "Pricing data for model %s is not valid: %s", model, pricing
+            )
+
         self._loaded_models_pricing[model] = pricing
         return self._loaded_models_pricing[model]
 
-    def _resolve_model_pricing(self, data: dict[str, Any], model: str) -> dict[str, Any] | None:
+    def _resolve_model_pricing(
+        self, data: dict[str, Any], model: str
+    ) -> dict[str, Any] | None:
         if model in data:
             return data[model]
 
         for key in data.keys():
             if model in key:
-                _logger.warning("Found only fuzzy match for pricing model name: %s -> %s", model, key)
+                _logger.warning(
+                    "Found only fuzzy match for pricing model name: %s -> %s",
+                    model,
+                    key,
+                )
                 return data[key]
 
         return None
-    
+
     def _ensure_cache_dir(self) -> None:
         """Ensure cache directory exists."""
         self._cache_dir.mkdir(parents=True, exist_ok=True)
@@ -255,7 +297,9 @@ class LLMPricingLoader:
         if not self._cache_file.exists():
             return False
 
-        cache_age = datetime.now() - datetime.fromtimestamp(self._cache_file.stat().st_mtime)
+        cache_age = datetime.now() - datetime.fromtimestamp(
+            self._cache_file.stat().st_mtime
+        )
         return cache_age < self._cache_duration
 
     def _load_cached_pricing(self) -> dict[str, Any] | None:
@@ -287,7 +331,7 @@ class LLMPricingLoader:
         stop=stop_after_attempt(3),
         wait=wait_exponential(),
         retry=retry_if_exception_type((URLError, HTTPError)),
-        before_sleep=before_sleep_log(_logger, logging.WARNING)
+        before_sleep=before_sleep_log(_logger, logging.WARNING),
     )
     def _fetch_from_url(self) -> dict[str, Any]:
         """Fetch pricing data from remote URL."""
@@ -338,7 +382,7 @@ class LLMUsage:
             pricing=self.pricing,
             token_usage=self.token_usage + other.token_usage,
             cost=self.cost + other.cost,
-            num_calls=self.num_calls + other.num_calls
+            num_calls=self.num_calls + other.num_calls,
         )
 
     def __radd__(self, other: int) -> "LLMUsage":
@@ -349,7 +393,7 @@ class LLMUsage:
         console = Console()
         console.print(table)
         console.print()
-    
+
     def table_to_string(self) -> str:
         table = self._build_rich_table()
         buffer = StringIO()
@@ -360,65 +404,71 @@ class LLMUsage:
 
     def _build_rich_table(self) -> Table:
         cost_formatter = _create_cost_formatter(_determine_cost_decimals(self.cost))
-        
+
         table = Table(
-            title=f"[bold cyan]LLM API Usage Breakdown, $[/bold cyan]\n[dim]Model: {self.model}, number of calls: {self.num_calls}[/dim]", 
+            title=f"[bold cyan]LLM API Usage Breakdown, $[/bold cyan]\n[dim]Model: {self.model}, number of calls: {self.num_calls}[/dim]",
             title_justify="center",
             show_header=True,
             header_style="bold magenta",
             border_style="blue",
-            show_lines=True
+            show_lines=True,
         )
-        
+
         table.add_column("Token Type", style="cyan", justify="left", min_width=20)
         table.add_column("Count", style="green", justify="right", min_width=15)
         table.add_column("Price per 1M", style="yellow", justify="right", min_width=15)
         table.add_column("Cost", style="bright_green", justify="right", min_width=15)
-        
+
         # Add rows for each token type
         table.add_row(
             "Cached Input",
             f"{self.token_usage.cached_input:,}",
             f"${self.pricing.cached_input * 1_000_000:,.2f}",
-            cost_formatter(self.cost.cached_input)
+            cost_formatter(self.cost.cached_input),
         )
-        
+
         table.add_row(
             "Uncached Input",
             f"{self.token_usage.uncached_input:,}",
             f"${self.pricing.uncached_input * 1_000_000:,.2f}",
-            cost_formatter(self.cost.uncached_input)
+            cost_formatter(self.cost.uncached_input),
         )
-        
+
         table.add_row(
             "Reasoning",
             f"{self.token_usage.reasoning:,}",
             f"${self.pricing.reasoning * 1_000_000:,.2f}",
-            cost_formatter(self.cost.reasoning)
+            cost_formatter(self.cost.reasoning),
         )
-        
+
         table.add_row(
             "Output",
             f"{self.token_usage.output:,}",
             f"${self.pricing.output * 1_000_000:,.2f}",
-            cost_formatter(self.cost.output)
+            cost_formatter(self.cost.output),
         )
-        
+
         # Add separator and total row
         table.add_section()
         table.add_row(
             "[bold]TOTAL[/bold]",
             f"[bold]{self.token_usage.total:,}[/bold]",
             "[dim]—[/dim]",
-            f"[bold]{cost_formatter(self.cost.total)}[/bold]"
+            f"[bold]{cost_formatter(self.cost.total)}[/bold]",
         )
-        
+
         return table
 
 
 def _determine_cost_decimals(cost: LLMCost) -> int:
     # Determine consistent decimal places for the entire "Cost" column
-    values = [cost.cached_input, cost.uncached_input, cost.reasoning, cost.output, cost.total]
+    values = [
+        cost.cached_input,
+        cost.uncached_input,
+        cost.reasoning,
+        cost.output,
+        cost.total,
+    ]
 
     # Always at least cents (2)
     non_zero_values = [v for v in values if v != 0]
@@ -427,7 +477,7 @@ def _determine_cost_decimals(cost: LLMCost) -> int:
     min_non_zero = min(non_zero_values)
     if min_non_zero >= 1:
         return 2
-    
+
     # For values < 1$, ensure at least 2 significant digits are shown across the column
     a = -floor(log10(float(min_non_zero)))
     return max(2, a + 1)
@@ -437,7 +487,7 @@ def _create_cost_formatter(cost_decimals: int):
     def cost_formatter(value: Decimal) -> str:
         if value == 0:
             return "$0"
-        
+
         format = "${value:,." + str(cost_decimals) + "f}"
         return format.format(value=value)
 

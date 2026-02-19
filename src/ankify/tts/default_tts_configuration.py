@@ -14,20 +14,36 @@ class DefaultTTSConfigurator:
 
     def _load_defaults(self, provider: str) -> dict[str, str | dict[str, str]]:
         filename = f"tts_defaults_{provider}.json"
-        content = resources.files("ankify.resources.tts").joinpath(filename).read_text(encoding="utf-8")
+        content = (
+            resources.files("ankify.resources.tts")
+            .joinpath(filename)
+            .read_text(encoding="utf-8")
+        )
         defaults: dict[str, str | dict[str, str]] = json.loads(content)
-        logger.debug("Loaded %s default voice codes for provider '%s'.", len(defaults), provider)
+        logger.debug(
+            "Loaded %s default voice codes for provider '%s'.", len(defaults), provider
+        )
 
-        aliases_content = resources.files("ankify.resources").joinpath("language_aliases.json").read_text(encoding="utf-8")
+        aliases_content = (
+            resources.files("ankify.resources")
+            .joinpath("language_aliases.json")
+            .read_text(encoding="utf-8")
+        )
         aliases: dict[str, str] = json.loads(aliases_content)
         added_aliases = {}
         for alias, target in aliases.items():
             if alias not in defaults and target in defaults:
                 added_aliases[alias] = defaults[target]
 
-        logger.debug("Loaded %s language aliases for provider '%s'.", len(added_aliases), provider)
+        logger.debug(
+            "Loaded %s language aliases for provider '%s'.",
+            len(added_aliases),
+            provider,
+        )
         defaults.update(added_aliases)
-        logger.debug("Total %s default voice codes for provider '%s'.", len(defaults), provider)
+        logger.debug(
+            "Total %s default voice codes for provider '%s'.", len(defaults), provider
+        )
         return defaults
 
     def get_config(self, language: str) -> LanguageTTSConfig:
@@ -41,10 +57,7 @@ class DefaultTTSConfigurator:
                 f"Make sure you are using a valid language code. "
                 f"Available language codes: {sorted(self.defaults.keys())}"
             )
-        
+
         value = self.defaults[language]
         options = TTSVoiceOptions(**value)
-        return LanguageTTSConfig(
-            provider=self.default_provider,
-            options=options
-        )
+        return LanguageTTSConfig(provider=self.default_provider, options=options)

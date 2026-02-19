@@ -1,7 +1,12 @@
 import boto3
 from botocore.client import BaseClient
 from botocore.exceptions import BotoCoreError, ClientError
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+)
 from contextlib import closing
 from xml.sax.saxutils import escape as xml_escape
 
@@ -32,33 +37,40 @@ class AWSPollySingleLanguageClient(TTSSingleLanguageClient):
 
         for char, replacement, sentinel in AWSPollySingleLanguageClient.ssml_mapping:
             text = text.replace(char, sentinel)
-        
+
         text = xml_escape(text)
-        
+
         for char, replacement, sentinel in AWSPollySingleLanguageClient.ssml_mapping:
             text = text.replace(sentinel, replacement)
-                
+
         return {
             "Text": f"<speak>{text}</speak>",
             "TextType": "ssml",
         }
 
-    def __init__(self, access_settings: AWSProviderAccess, language_settings: TTSVoiceOptions):
+    def __init__(
+        self, access_settings: AWSProviderAccess, language_settings: TTSVoiceOptions
+    ):
         self.logger = get_logger("ankify.tts.aws")
         self.logger.debug(
-            "Initializing AWS Polly client for voice id '%s' and engine '%s'", 
-            language_settings.voice_id, language_settings.engine,
+            "Initializing AWS Polly client for voice id '%s' and engine '%s'",
+            language_settings.voice_id,
+            language_settings.engine,
         )
 
         session_kwargs: dict[str, str] = {}
-        session_kwargs["aws_access_key_id"] = access_settings.access_key_id.get_secret_value()
-        session_kwargs["aws_secret_access_key"] = access_settings.secret_access_key.get_secret_value()
+        session_kwargs["aws_access_key_id"] = (
+            access_settings.access_key_id.get_secret_value()
+        )
+        session_kwargs["aws_secret_access_key"] = (
+            access_settings.secret_access_key.get_secret_value()
+        )
         session_kwargs["region_name"] = access_settings.region
         session = boto3.Session(**session_kwargs)
         self._client: BaseClient = session.client("polly")
 
         self._language_settings = language_settings
-    
+
     def synthesize(
         self,
         entities: dict[str, bytes | None],
@@ -67,7 +79,9 @@ class AWSPollySingleLanguageClient(TTSSingleLanguageClient):
     ) -> None:
         self.logger.info(
             "Synthesizing speech for %d entities, voice id '%s', engine '%s'",
-            len(entities), self._language_settings.voice_id, self._language_settings.engine,
+            len(entities),
+            self._language_settings.voice_id,
+            self._language_settings.engine,
         )
 
         # TODO: batching
@@ -80,7 +94,9 @@ class AWSPollySingleLanguageClient(TTSSingleLanguageClient):
         wait=wait_exponential(),
         retry=retry_if_exception_type((BotoCoreError, ClientError)),
     )
-    def _synthesize_single(self, text: str, language: str, cost_tracker: TTSCostTracker | None) -> bytes:
+    def _synthesize_single(
+        self, text: str, language: str, cost_tracker: TTSCostTracker | None
+    ) -> bytes:
         params = self.possibly_preprocess_text_into_ssml(text)
         response = self._client.synthesize_speech(
             **params,
@@ -94,7 +110,9 @@ class AWSPollySingleLanguageClient(TTSSingleLanguageClient):
         if "AudioStream" not in response or response["AudioStream"] is None:
             self.logger.error(
                 "Polly response missing AudioStream. voice_id='%s' engine='%s' text='%s'",
-                self._language_settings.voice_id, self._language_settings.engine, text,
+                self._language_settings.voice_id,
+                self._language_settings.engine,
+                text,
             )
             raise RuntimeError("Polly response did not contain AudioStream")
 
@@ -102,4 +120,3 @@ class AWSPollySingleLanguageClient(TTSSingleLanguageClient):
             audio_bytes = stream.read()
 
         return audio_bytes
-

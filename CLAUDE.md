@@ -19,7 +19,7 @@ Ankify converts arbitrary text into Anki vocabulary decks with text-to-speech au
 
 ## Development Commands
 
-**All Python tools must be run through `uv run` to ensure the virtual environment is properly activated.** Never invoke `python`, `pytest`, `ruff`, `mypy`, `pip`, etc. directly.
+**All Python tools must be run through `uv run` to ensure the virtual environment is properly activated.** Never invoke `python`, `pytest`, `ruff`, `pip`, or anything like that without uv.
 
 ```bash
 # Install for development
@@ -32,25 +32,15 @@ uv sync --all-extras
 uv run ruff check src/
 uv run ruff format src/
 
-# Type checking
-uv run mypy src/ankify/
-
-# Run tests (all / by marker)
-uv run pytest tests/
-uv run pytest -m unit
-uv run pytest -m integration
-uv run pytest -m e2e
-
-# Run a single test file or test
-uv run pytest tests/path/to/test_file.py -v
-uv run pytest tests/path/to/test_file.py::test_name -v
+# Tests
+uv run pytest
 ```
 
 ## Rules
 
 ### Permissions & Automation
 
-- **Python, pip, tests, etc. execution:** Only through `uv run` or `uv pip`. Direct `python`, `pip`, `pytest`, `ruff`, `mypy` calls are denied.
+- **Python, pip, tests, etc. execution:** Only through `uv run` or `uv pip`. Direct `python`, `pip`, `pytest`, `ruff`, etc. calls are denied.
 - **File operations:** No `rm`, `mv`, `rmdir`, `chmod`, `chown`. Use `mkdir`, `cp`, `touch` freely. Use the `Edit`/`Write` / `MultiEdit` / etc. tools for file content changes.
 - **Git:** Read-only. No commits, pushes, checkouts, merges, rebases, or any state-changing operations.
 - **AWS/CDK:** Read-only. Inspect with `aws ... list-*`, `aws ... get-*`, `aws ... describe-*`, etc. Use `cdk synth` and `cdk diff` for validation. No `cdk deploy`, no S3 writes, no Lambda updates, etc.

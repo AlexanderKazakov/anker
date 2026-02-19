@@ -54,6 +54,25 @@ See [infra/README.md](infra/README.md) for deployment instructions.
 uv pip install -e .[local-all,dev]
 ```
 
+#### Tests
+Run all tests:
+```bash
+uv run pytest
+```
+
+Run a single test directory, file, or test:
+```bash
+uv run pytest tests/path/to/test_directory -v
+uv run pytest tests/path/to/test_file.py -v
+uv run pytest tests/path/to/test_file.py::test_name -v
+```
+
+#### Linter
+```bash
+uv run ruff check src/
+```
+
+
 ## MCP Server
 
 Ankify provides an MCP server for integration with LLM clients.

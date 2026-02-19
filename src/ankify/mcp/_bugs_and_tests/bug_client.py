@@ -18,7 +18,7 @@ async def get_prompt__analyze_data_request():
                 # The returned result is:
                 # [PromptMessage(role='user', content=TextContent(type='text', text="Please perform a 'annotation=NoneType required=False default='a default value' description='Type of analysis.'' analysis on the data found at https://example.com/data.csv.", annotations=None, meta=None))]
                 # "analysis_type": "summary",
-            }
+            },
         )
         print(result.messages)
         print()

@@ -36,7 +36,9 @@ class TTSCostTracker(ABC):
     def __init__(self, provider_name: str):
         self._logger = get_logger(f"ankify.tts.{provider_name}.cost")
         self._provider_name = provider_name
-        self._usage: DefaultDict[LanguageUsageKey, EngineUsage] = defaultdict(EngineUsage)
+        self._usage: DefaultDict[LanguageUsageKey, EngineUsage] = defaultdict(
+            EngineUsage
+        )
 
     @abstractmethod
     def _get_rate(self, engine: str | None) -> Decimal:
@@ -58,7 +60,9 @@ class TTSCostTracker(ABC):
         cost = (Decimal(chars) / Decimal("1_000_000")) * rate
         return cost
 
-    def track_usage(self, text: str, engine: str | None, language: str | None = None) -> None:
+    def track_usage(
+        self, text: str, engine: str | None, language: str | None = None
+    ) -> None:
         """
         Calculate cost and accumulate usage stats by language and engine.
         """
@@ -86,7 +90,9 @@ class TTSCostTracker(ABC):
         total_chars = 0
         total_cost = Decimal("0.00")
 
-        for key, usage in sorted(self._usage.items(), key=lambda x: (x[0].language, x[0].engine)):
+        for key, usage in sorted(
+            self._usage.items(), key=lambda x: (x[0].language, x[0].engine)
+        ):
             self._logger.info(
                 f"  {key.language} ({key.engine} engine): {usage.chars:,} characters, ${usage.cost:.4f}"
             )

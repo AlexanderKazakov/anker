@@ -8,6 +8,7 @@ logger = get_logger("ankify.observability")
 
 try:
     import mlflow
+
     MLFLOW_AVAILABLE = True
 except ImportError:
     logger.debug("MLflow not available, tracking disabled")
@@ -26,7 +27,7 @@ class MLflowTracker:
             logger.warning(
                 "MLflow tracking URI provided (%s), but 'mlflow' package is not installed. "
                 "Tracking will be disabled.",
-                config.tracking_uri
+                config.tracking_uri,
             )
             return
 
@@ -38,9 +39,9 @@ class MLflowTracker:
             logger.info(
                 "Initialized MLflow tracking at %s (experiment: %s)",
                 config.tracking_uri,
-                config.experiment_name
+                config.experiment_name,
             )
-        
+
         except Exception as e:
             logger.warning("Failed to initialize MLflow: %s", e)
             self.enabled = False
@@ -64,11 +65,10 @@ class MLflowTracker:
         """Log parameters to the current run. No-op if disabled."""
         if not self.enabled:
             return
-        
+
         # Only log if there is an active run
         if mlflow.active_run():
             try:
                 mlflow.log_params(params)
             except Exception as e:
                 logger.warning("Failed to log params to MLflow: %s", e)
-

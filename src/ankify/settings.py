@@ -9,6 +9,7 @@ from pydantic_settings.sources import PydanticBaseSettingsSource
 
 class StrictModel(BaseModel):
     """Base for nested config models; forbids unknown fields to catch YAML typos."""
+
     model_config = ConfigDict(extra="forbid")
 
 
@@ -19,7 +20,9 @@ class LLMOptions(StrictModel):
         default="gpt-5",
         description="LLM model identifier to use (e.g., gpt-4o, gpt-5).",
     )
-    reasoning_effort: Literal["none", "minimal", "low", "medium", "high", "xhigh"] | None = Field(
+    reasoning_effort: (
+        Literal["none", "minimal", "low", "medium", "high", "xhigh"] | None
+    ) = Field(
         default=None,
         description="Reasoning effort for reasoning models",
     )
@@ -52,6 +55,7 @@ class OpenAIProviderAccess(StrictModel):
         description="URL of the openai-compatible API. `None` for for OpenAI itself. Can be provided via env",
     )
 
+
 class LLMConfig(StrictModel):
     """LLM configuration: provider selection, runtime options, and credentials."""
 
@@ -68,7 +72,9 @@ class LLMConfig(StrictModel):
 class TTSVoiceOptions(StrictModel):
     """Voice configuration used by the TTS provider."""
 
-    voice_id: str = Field(description="Provider voice identifier to synthesize with (e.g., Polly voice ID).")
+    voice_id: str = Field(
+        description="Provider voice identifier to synthesize with (e.g., Polly voice ID)."
+    )
     engine: Literal["standard", "neural"] | None = Field(
         default=None,
         description="Synthesis engine type (if required by the provider).",
@@ -99,8 +105,8 @@ class AWSProviderAccess(StrictModel):
         default=None,
         description="AWS Secret Access Key. Can be provided via env",
     )
-    region: str | None = Field(
-        default=None,
+    region: str = Field(
+        default="eu-central-1",
         description="AWS region (e.g., eu-central-1) for the TTS service.",
     )
 
@@ -112,14 +118,15 @@ class AzureProviderAccess(StrictModel):
         default=None,
         description="Azure Cognitive Services subscription key. Can be provided via env",
     )
-    region: str | None = Field(
-        default=None,
-        description="Azure region (e.g., eastus, westeurope) for the TTS service.",
+    region: str = Field(
+        default="westeurope",
+        description="Azure region (e.g., westeurope) for the TTS service.",
     )
 
 
 class Text2SpeechSettings(StrictModel):
     """Text-to-Speech configuration."""
+
     default_provider: TTSProvider = Field(
         default="edge",
         description="Default TTS provider to use if no specific settings are set for a language.",
@@ -141,6 +148,7 @@ class ProviderAccessSettings(StrictModel):
 
 class MLflowConfig(StrictModel):
     """Configuration for MLflow tracking (optional)."""
+
     tracking_uri: str | None = Field(
         default=None,
         description="MLflow tracking URI. If None, tracking is disabled.",
@@ -255,7 +263,7 @@ class Settings(BaseSettings):
 class AnkifyYamlSettingsSource(PydanticBaseSettingsSource):
     """
     Load settings from a YAML file.
-    Returns a flat dict matching Settings fields structure; 
+    Returns a flat dict matching Settings fields structure;
     nested dicts are passed through for Pydantic to coerce into nested models.
     """
 
@@ -268,23 +276,25 @@ class AnkifyYamlSettingsSource(PydanticBaseSettingsSource):
         config_path = Path(str(config_path_value)).expanduser().resolve()
         if not config_path.is_file():
             raise ValueError(f"Config file not found: {config_path}")
-        
+
         # Lazy import: yaml is only needed for CLI config loading
         import yaml
-        
+
         text = config_path.read_text(encoding="utf-8")
         data = yaml.safe_load(text)
-        
-        if 'config' in data:
+
+        if "config" in data:
             raise ValueError(
                 "YAML config cannot contain a nested 'config' key. "
                 "This option is reserved for the YAML config file itself, "
                 "it's only used from the command line via '--config' option."
             )
-        
+
         return data
 
-    def get_field_value(self, field: FieldInfo, field_name: str) -> tuple[Any, str, bool]:
+    def get_field_value(
+        self, field: FieldInfo, field_name: str
+    ) -> tuple[Any, str, bool]:
         # Not used because this source overrides __call__ to return the full mapping.
         # Implemented just to satisfy the abstract interface.
         return None, field_name, False

@@ -14,5 +14,3 @@ def create_llm_client(settings: Settings) -> LLMClient:
         return OpenAIClient(llm_config=llm_config, openai_access=openai_access)
     else:
         raise ValueError(f"Unsupported LLM provider: {provider}")
-
-

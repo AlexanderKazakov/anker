@@ -12,10 +12,14 @@ class LLMClient(ABC):
         self._model = model
         self._logger = get_logger(f"ankify.llm.{self.__class__.__name__}")
 
-    def generate_vocabulary(self, instructions: str, input_text: str) -> list[VocabEntry]:
+    def generate_vocabulary(
+        self, instructions: str, input_text: str
+    ) -> list[VocabEntry]:
         self._logger.info("Generating vocabulary entries with LLM")
         start_time = time.time()
-        llm_answer, llm_usage = self._call_llm(instructions=instructions, input_text=input_text)
+        llm_answer, llm_usage = self._call_llm(
+            instructions=instructions, input_text=input_text
+        )
         end_time = time.time()
         self._logger.info("LLM call took %.2f seconds", end_time - start_time)
         LLMUsage.from_openai_usage(self._model, llm_usage).print_table()
@@ -30,5 +34,3 @@ class LLMClient(ABC):
     def _parse_llm_answer(self, llm_answer: str) -> list[VocabEntry]:
         self._logger.info("Parsing LLM answer into vocabulary entries")
         return read_from_string(llm_answer)
-    
-

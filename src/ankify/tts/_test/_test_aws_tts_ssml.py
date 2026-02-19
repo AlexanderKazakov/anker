@@ -6,7 +6,12 @@ import boto3
 from botocore.client import BaseClient
 from botocore.exceptions import BotoCoreError, ClientError
 from contextlib import closing
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+)
 
 from ...logging import get_logger, setup_logging
 from ...settings import Settings, AWSProviderAccess, TTSVoiceOptions
@@ -22,8 +27,12 @@ def _build_polly_client(access: AWSProviderAccess | None) -> BaseClient:
     session_kwargs: dict[str, str] = {}
     if access is not None:
         if access.access_key_id is not None and access.secret_access_key is not None:
-            session_kwargs["aws_access_key_id"] = access.access_key_id.get_secret_value()
-            session_kwargs["aws_secret_access_key"] = access.secret_access_key.get_secret_value()
+            session_kwargs["aws_access_key_id"] = (
+                access.access_key_id.get_secret_value()
+            )
+            session_kwargs["aws_secret_access_key"] = (
+                access.secret_access_key.get_secret_value()
+            )
         if access.region:
             session_kwargs["region_name"] = access.region
 
@@ -66,12 +75,21 @@ def _synthesize(
 def _english_samples() -> dict[str, tuple[str, bool]]:
     return {
         "semicolon_plain": ("bandage (medical); association (organization)", False),
-        "semicolon_ssml_medium": ("<speak>bandage (medical)<break strength='medium'/> association (organization)</speak>", True),
-        "semicolon_ssml_strong": ("<speak>bandage (medical)<break strength='strong'/> association (organization)</speak>", True),
+        "semicolon_ssml_medium": (
+            "<speak>bandage (medical)<break strength='medium'/> association (organization)</speak>",
+            True,
+        ),
+        "semicolon_ssml_strong": (
+            "<speak>bandage (medical)<break strength='strong'/> association (organization)</speak>",
+            True,
+        ),
         "brackets_plain": ("bandage (medical)", False),
         # "brackets_plain_wo": ("bandage medical", False),
         "slash_plain": ("bandage/medical", False),
-        "slash_ssml_medium": ("<speak>bandage<break strength='medium'/>medical</speak>", True),
+        "slash_ssml_medium": (
+            "<speak>bandage<break strength='medium'/>medical</speak>",
+            True,
+        ),
         "double_dots_plain": ("not only .. but also", False),
         "triple_dots_plain": ("not only ... but also", False),
         "ellipsis_plain": ("not only … but also", False),
@@ -81,12 +99,21 @@ def _english_samples() -> dict[str, tuple[str, bool]]:
 def _german_samples() -> dict[str, tuple[str, bool]]:
     return {
         "semicolon_plain": ("Verband (medizinisch); Verband (Organisation)", False),
-        "semicolon_ssml_medium": ("<speak>Verband (medizinisch)<break strength='medium'/> Verband (Organisation)</speak>", True),
-        "semicolon_ssml_strong": ("<speak>Verband (medizinisch)<break strength='strong'/> Verband (Organisation)</speak>", True),
+        "semicolon_ssml_medium": (
+            "<speak>Verband (medizinisch)<break strength='medium'/> Verband (Organisation)</speak>",
+            True,
+        ),
+        "semicolon_ssml_strong": (
+            "<speak>Verband (medizinisch)<break strength='strong'/> Verband (Organisation)</speak>",
+            True,
+        ),
         "brackets_plain": ("Verband (medizinisch)", False),
         # "brackets_plain_wo": ("Verband medizinisch", False),
         "slash_plain": ("Verband/medizinisch", False),
-        "slash_ssml_medium": ("<speak>Verband<break strength='medium'/>medizinisch</speak>", True),
+        "slash_ssml_medium": (
+            "<speak>Verband<break strength='medium'/>medizinisch</speak>",
+            True,
+        ),
         "double_dots_plain": ("nicht nur .. sondern auch", False),
         "triple_dots_plain": ("nicht nur ... sondern auch", False),
         "ellipsis_plain": ("nicht nur … sondern auch", False),
@@ -96,19 +123,30 @@ def _german_samples() -> dict[str, tuple[str, bool]]:
 def _russian_samples() -> dict[str, tuple[str, bool]]:
     return {
         "semicolon_plain": ("бинт (медицинский); ассоциация (организация)", False),
-        "semicolon_ssml_medium": ("<speak>бинт (медицинский)<break strength='medium'/> ассоциация (организация)</speak>", True),
-        "semicolon_ssml_strong": ("<speak>бинт (медицинский)<break strength='strong'/> ассоциация (организация)</speak>", True),
+        "semicolon_ssml_medium": (
+            "<speak>бинт (медицинский)<break strength='medium'/> ассоциация (организация)</speak>",
+            True,
+        ),
+        "semicolon_ssml_strong": (
+            "<speak>бинт (медицинский)<break strength='strong'/> ассоциация (организация)</speak>",
+            True,
+        ),
         "brackets_plain": ("бинт (медицинский)", False),
         # "brackets_plain_wo": ("бинт медицинский", False),
         "slash_plain": ("бинт/медицинский", False),
-        "slash_ssml_medium": ("<speak>бинт<break strength='medium'/>медицинский</speak>", True),
+        "slash_ssml_medium": (
+            "<speak>бинт<break strength='medium'/>медицинский</speak>",
+            True,
+        ),
         "double_dots_plain": ("не только .. но и", False),
         "triple_dots_plain": ("не только ... но и", False),
         "ellipsis_plain": ("не только … но и", False),
     }
 
 
-def _iter_languages(settings: Settings) -> Iterable[tuple[str, TTSVoiceOptions, dict[str, tuple[str, bool]]]]:
+def _iter_languages(
+    settings: Settings,
+) -> Iterable[tuple[str, TTSVoiceOptions, dict[str, tuple[str, bool]]]]:
     mapping = {
         "english": _english_samples,
         "german": _german_samples,
@@ -131,19 +169,32 @@ def main1() -> None:
     out_dir.mkdir()
 
     for lang_key, voice_opts, samples in _iter_languages(settings):
-        logger.info("Testing language=%s voice=%s engine=%s", lang_key, voice_opts.voice_id, voice_opts.engine)
+        logger.info(
+            "Testing language=%s voice=%s engine=%s",
+            lang_key,
+            voice_opts.voice_id,
+            voice_opts.engine,
+        )
         for case_name, (text, is_ssml) in samples.items():
             try:
-                audio = _synthesize(client, text=text, is_ssml=is_ssml, voice=voice_opts)
-            except Exception as e:
-                logger.exception("Synthesis failed: lang=%s voice=%s case=%s", lang_key, voice_opts.voice_id, case_name)
+                audio = _synthesize(
+                    client, text=text, is_ssml=is_ssml, voice=voice_opts
+                )
+            except Exception:
+                logger.exception(
+                    "Synthesis failed: lang=%s voice=%s case=%s",
+                    lang_key,
+                    voice_opts.voice_id,
+                    case_name,
+                )
                 continue
 
-            filename = f"{lang_key}-{voice_opts.voice_id}-{voice_opts.engine}-{case_name}.mp3"
+            filename = (
+                f"{lang_key}-{voice_opts.voice_id}-{voice_opts.engine}-{case_name}.mp3"
+            )
             path = out_dir / filename
             path.write_bytes(audio)
             logger.info("Saved %s", path)
-
 
 
 def main2() -> None:
@@ -218,10 +269,6 @@ def main2() -> None:
         logger.info("Saved %s", path)
 
 
-
-
 if __name__ == "__main__":
     # main1()
     main2()
-
-

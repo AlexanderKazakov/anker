@@ -30,7 +30,9 @@ def read_from_string(text: str) -> list[VocabEntry]:
                 back_language=back_lang,
             )
         )
-    logger.info("Converted %d TSV rows into %d vocabulary entries", len(rows), len(entries))
+    logger.info(
+        "Converted %d TSV rows into %d vocabulary entries", len(rows), len(entries)
+    )
     return entries
 
 
@@ -46,11 +48,12 @@ def write_to_file(vocab: list[VocabEntry], path: Path) -> None:
     with path.open("w", encoding="utf-8") as f:
         writer = csv.writer(f, delimiter="\t")
         for e in vocab:
-            writer.writerow([
-                e.front,
-                e.back,
-                e.front_language,
-                e.back_language,
-            ])
+            writer.writerow(
+                [
+                    e.front,
+                    e.back,
+                    e.front_language,
+                    e.back_language,
+                ]
+            )
     logger.info("Finished writing TSV file to %s", path.resolve())
-
