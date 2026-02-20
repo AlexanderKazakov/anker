@@ -1,7 +1,6 @@
 """Integration tests for AnkiDeckCreator."""
 
 import pytest
-from pathlib import Path
 
 from ankify.anki.anki_deck_creator import AnkiDeckCreator
 from ankify.vocab_entry import VocabEntry

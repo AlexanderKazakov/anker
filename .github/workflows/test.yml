@@ -1,0 +1,54 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv pip install -e ".[local-all,dev]" --system
+
+      - name: Format
+        run: ruff format --check src/
+
+      - name: Lint
+        run: ruff check src/
+
+      - name: Tests without API keys
+        if: github.ref != 'refs/heads/main'
+        run: pytest
+
+      - name: Tests with API keys
+        if: github.ref == 'refs/heads/main'
+        env:
+          ANKIFY__PROVIDERS__AZURE__SUBSCRIPTION_KEY: ${{ secrets.ANKIFY__PROVIDERS__AZURE__SUBSCRIPTION_KEY }}
+          ANKIFY__PROVIDERS__AWS__ACCESS_KEY_ID: ${{ secrets.ANKIFY__PROVIDERS__AWS__ACCESS_KEY_ID }}
+          ANKIFY__PROVIDERS__AWS__SECRET_ACCESS_KEY: ${{ secrets.ANKIFY__PROVIDERS__AWS__SECRET_ACCESS_KEY }}
+        run: pytest
