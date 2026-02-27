@@ -8,18 +8,21 @@ from tenacity import (
     retry_if_exception_type,
 )
 from contextlib import closing
-from xml.sax.saxutils import escape as xml_escape
 
 from ..logging import get_logger
 from ..settings import TTSVoiceOptions, AWSProviderAccess
 from .tts_base import TTSSingleLanguageClient
 from .tts_cost_tracker import TTSCostTracker
+from .tts_text_preprocessor import (
+    has_vocabulary_separators,
+    replace_separators_with_ssml_breaks,
+)
 
 
 class AWSPollySingleLanguageClient(TTSSingleLanguageClient):
     ssml_mapping = [
-        ("/", "<break strength='medium'/>", "__ankify_sentinel_slash__"),
-        (";", "<break strength='strong'/>", "__ankify_sentinel_semicolon__"),
+        ("/", "<break time='100ms'/>"),
+        (";", "<break time='200ms'/>"),
     ]
 
     @staticmethod
@@ -30,21 +33,17 @@ class AWSPollySingleLanguageClient(TTSSingleLanguageClient):
         If there are no characters that need to be replaced, the text is returned as is.
         If there are characters that need to be replaced, the text is returned as SSML, XML-escaped.
         """
-        if not any(c in text for c, _, _ in AWSPollySingleLanguageClient.ssml_mapping):
+        if not has_vocabulary_separators(text):
             return {
                 "Text": text,
             }
 
-        for char, replacement, sentinel in AWSPollySingleLanguageClient.ssml_mapping:
-            text = text.replace(char, sentinel)
-
-        text = xml_escape(text)
-
-        for char, replacement, sentinel in AWSPollySingleLanguageClient.ssml_mapping:
-            text = text.replace(sentinel, replacement)
-
         return {
-            "Text": f"<speak>{text}</speak>",
+            "Text": (
+                "<speak>"
+                f"{replace_separators_with_ssml_breaks(text, AWSPollySingleLanguageClient.ssml_mapping)}"
+                "</speak>"
+            ),
             "TextType": "ssml",
         }
 

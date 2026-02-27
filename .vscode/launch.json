@@ -11,6 +11,18 @@
             "python": "${workspaceFolder}/.venv/bin/python"
         },
         {
+            "name": "pytest",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": [
+                "tests/unit/tts/test_tts_providers.py::test_tts_provider_audio_transcribes_to_expected_text"
+            ],
+            "python": "${workspaceFolder}/.venv/bin/python"
+        },
+        {
             "name": "mcp_demo_client",
             "type": "debugpy",
             "request": "launch",

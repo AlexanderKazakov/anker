@@ -5,20 +5,24 @@ from tenacity import (
     wait_exponential,
     retry_if_exception_type,
 )
-from xml.sax.saxutils import escape as xml_escape
 
 from ..logging import get_logger
 from ..settings import TTSVoiceOptions, AzureProviderAccess
 from .tts_base import TTSSingleLanguageClient
 from .tts_cost_tracker import TTSCostTracker
+from .tts_text_preprocessor import (
+    has_vocabulary_separators,
+    lang_code_from_voice_id,
+    replace_separators_with_ssml_breaks,
+)
 
 
 class AzureTTSSingleLanguageClient(TTSSingleLanguageClient):
     """Azure Cognitive Services Speech TTS client for a single language."""
 
     ssml_mapping = [
-        ("/", "<break strength='medium'/>", "__ankify_sentinel_slash__"),
-        (";", "<break strength='strong'/>", "__ankify_sentinel_semicolon__"),
+        ("/", "<break time='200ms'/>"),
+        (";", "<break time='300ms'/>"),
     ]
 
     @staticmethod
@@ -33,19 +37,19 @@ class AzureTTSSingleLanguageClient(TTSSingleLanguageClient):
 
         Returns a tuple of (text, is_ssml).
         """
-        if not any(c in text for c, _, _ in AzureTTSSingleLanguageClient.ssml_mapping):
+        if not has_vocabulary_separators(text):
             return text, False
 
-        for char, _, sentinel in AzureTTSSingleLanguageClient.ssml_mapping:
-            text = text.replace(char, sentinel)
-
-        text = xml_escape(text)
-
-        for _, replacement, sentinel in AzureTTSSingleLanguageClient.ssml_mapping:
-            text = text.replace(sentinel, replacement)
+        text = replace_separators_with_ssml_breaks(
+            text, AzureTTSSingleLanguageClient.ssml_mapping
+        )
+        lang_code = lang_code_from_voice_id(voice_id)
 
         # Azure requires specific SSML format with voice element
-        ssml = f'<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US"><voice name="{voice_id}">{text}</voice></speak>'
+        ssml = (
+            '<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" '
+            f'xml:lang="{lang_code}"><voice name="{voice_id}">{text}</voice></speak>'
+        )
         return ssml, True
 
     def __init__(

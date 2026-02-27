@@ -1,7 +1,6 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from typing import Awaitable, Callable, TYPE_CHECKING
-from xml.sax.saxutils import escape as xml_escape
 
 import aiohttp
 from tenacity import (
@@ -14,37 +13,19 @@ from tenacity import (
 from ..logging import get_logger
 from ..settings import TTSVoiceOptions
 from .tts_base import TTSSingleLanguageClient
+from .tts_text_preprocessor import replace_separators_with_plain_text
 
 if TYPE_CHECKING:
     from .tts_cost_tracker import TTSCostTracker
 
 
 class EdgeTTSSingleLanguageClient(TTSSingleLanguageClient):
-    ssml_mapping = [
-        ("/", "<break strength='medium'/>", "__ankify_sentinel_slash__"),
-        (";", "<break strength='strong'/>", "__ankify_sentinel_semicolon__"),
-    ]
-
     @staticmethod
-    def possibly_preprocess_text_into_ssml(text: str) -> str:
+    def possibly_preprocess_text(text: str) -> str:
         """
-        Semicolons are replaced with strong breaks, slashes are replaced with medium breaks.
-        Everything else is left as is, since it works fine as plain text.
-        If there are no characters that need to be replaced, the text is returned as is.
-        If there are characters that need to be replaced, the text is returned as SSML, XML-escaped.
+        Edge TTS does not support SSML, so we replace slashes with punctuation.
         """
-        if not any(c in text for c, _, _ in EdgeTTSSingleLanguageClient.ssml_mapping):
-            return text
-
-        for char, _, sentinel in EdgeTTSSingleLanguageClient.ssml_mapping:
-            text = text.replace(char, sentinel)
-
-        text = xml_escape(text)
-
-        for _, replacement, sentinel in EdgeTTSSingleLanguageClient.ssml_mapping:
-            text = text.replace(sentinel, replacement)
-
-        return f"<speak>{text}</speak>"
+        return replace_separators_with_plain_text(text)
 
     def __init__(self, language_settings: TTSVoiceOptions) -> None:
         self.logger = get_logger("ankify.tts.edge")
@@ -97,7 +78,7 @@ class EdgeTTSSingleLanguageClient(TTSSingleLanguageClient):
         retry=retry_if_exception_type((aiohttp.ClientError, asyncio.TimeoutError)),
     )
     def _synthesize_single(self, text: str) -> bytes:
-        prepared_text = self.possibly_preprocess_text_into_ssml(text)
+        prepared_text = self.possibly_preprocess_text(text)
         return self._run_coroutine(lambda: self._synthesize_single_async(prepared_text))
 
     async def _synthesize_single_async(self, text: str) -> bytes:
