@@ -32,6 +32,16 @@ jobs:
         with:
           enable-cache: true
 
+      - name: Install GStreamer (required by Azure Speech SDK for compressed audio)
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -yq --no-install-recommends \
+            libgstreamer1.0-0 \
+            gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good \
+            gstreamer1.0-plugins-bad \
+            gstreamer1.0-plugins-ugly
+
       - name: Install dependencies
         run: uv pip install -e ".[local-all,dev]" --system
 
